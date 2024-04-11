@@ -30,6 +30,7 @@ background levels must be BELOW ALL VALUES in the decay!
 
 ## COPY ME ##
 
+{
 experimental_data_dict = {
 
     # input times for bleachings with air freshener
@@ -71,3 +72,4 @@ experimental_data_dict = {
         'background_end_datetime' : [],
         },
     }
+}
