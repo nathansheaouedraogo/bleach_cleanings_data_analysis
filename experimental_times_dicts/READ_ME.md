@@ -30,11 +30,12 @@ background levels must be BELOW ALL VALUES in the decay!
 
 ## COPY ME ##
 
-{
+```
+
 experimental_data_dict = {
 
     # input times for bleachings with air freshener
-    'bleachings_with_airfresh':{ 
+    'bleachings_with_airfresh':{ # note: you may rename this to whatever identifier you wish. will not affect code!
 
         # refers to lighting condition of a specific peak (or any other identifier you want)
         'condition' : [],
@@ -54,7 +55,7 @@ experimental_data_dict = {
     
     
     # input times for bleachings without air freshener
-    'bleachings_without_airfresh':{ 
+    'bleachings_without_airfresh':{ # note: you may rename this to whatever identifier you wish. will not affect code!
 
         # refers to lighting condition of a specific peak (or any other identifier you want)
         'condition' : [],
@@ -72,4 +73,4 @@ experimental_data_dict = {
         'background_end_datetime' : [],
         },
     }
-}
+```
