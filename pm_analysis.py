@@ -5,6 +5,7 @@ from tkinter import messagebox
 import plotting
 import process_peak 
 import matplotlib
+from processed_peak_class import data_dict
 
 # update matplotlib paras to use stix font and tex notation
 matplotlib.rcParams['text.usetex'] = True
@@ -12,87 +13,109 @@ matplotlib.rcParams['font.family'] = 'stixgeneral'
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
 
-def pm_analysis():
-    # # load raw data 
-    # raw_data_path = fm.select_raw_data()
+
+
+def pm_analysis(time_resolution, timescale):
+    # if timescale.lower() not in ['seconds', 'minutes', 'hours']:
+    # messagebox.showerror(message='Fatal Error: Invalid timescale!')
+    # print(process finished with exit code 1 (invalid timescale))
+    # exit()
     
-    # # prompt experiment_date
-    # experiment_date = fm.input_date_of_experiment()
+    # load raw data 
+    raw_data_path = fm.select_raw_data()
     
-    # # create dirs in 'processed_data', return path
-    # processed_data_path = fm.create_dir(f'processed_data', experiment_date)
+    # prompt experiment_date
+    experiment_date = fm.input_date_of_experiment()
     
-    # # load df
-    # df_wide = pd.read_csv(raw_data_path)
-    # df_wide = df_wide[['Timestamp', 'PM Estimate']]
-    # df_wide.reset_index(drop=True, inplace=True)
-    # df_wide.rename(columns={
-    #     'Timestamp':'datetime', 
-    #     'PM Estimate':'pm_conc'}, 
-    #     inplace=True)
+    # create dirs in 'processed_data', return path
+    processed_data_path = fm.create_dir(f'processed_data', experiment_date)
     
-    # # convert to long data frame, show on plotly 
-    # df_long=pd.melt(df_wide, id_vars=['datetime'], value_vars=['pm_conc'])
-    # fig = px.line(df_long, x='datetime', y='value', color='variable')
-    # fig.show()
-    # messagebox.showinfo(message='Please fill out experimental data dictionary')
-    # while True:
-    #     input = messagebox.askyesnocancel(title=None, message='Are all times inputted?')
-    #     if input == True: 
-    #         break 
-    #     elif input == False: 
-    #         continue
-    #     else: 
-    #         messagebox.showerror(None, 'Fatal Error: \n\n Cancelled processing experiments')
-    #         print(f'\nprocess finished with exit code 1 (Cancelled processing experiments)\n')
-    #         exit()
+    # load df
+    df_wide = pd.read_csv(raw_data_path)
+    df_wide = df_wide[['Timestamp', 'PM Estimate']]
+    df_wide.reset_index(drop=True, inplace=True)
+    df_wide.rename(columns={
+        'Timestamp':'datetime', 
+        'PM Estimate':'pm_conc'}, 
+        inplace=True)
+    
+    # convert to long data frame, show on plotly 
+    df_long=pd.melt(df_wide, id_vars=['datetime'], value_vars=['pm_conc'])
+    fig = px.line(df_long, x='datetime', y='value', color='variable')
+    fig.show()
+    messagebox.showinfo(message='Please fill out experimental data dictionary')
+    while True:
+        input = messagebox.askyesnocancel(title=None, message='Are all times inputted?')
+        if input == True: 
+            break 
+        elif input == False: 
+            continue
+        else: 
+            messagebox.showerror(None, 'Fatal Error: \n\n Cancelled processing experiments')
+            print(f'\nprocess finished with exit code 1 (Cancelled processing experiments)\n')
+            exit()
     # here we will load the experimental data dictionary using fm.load_dict
     experimental_data_dict = fm.load_experimental_data_dict()
-    resolved_peaks_dict = {}
+    resolved_peaks_dict = data_dict()
     print(resolved_peaks_dict)
-    exit()
     
     
-    for key in experimental_data_dict.keys():        
-        resolved_peaks_dict[key] = process_peak.resolved_peaks_dict
-        for i in range(len(experimental_data_dict[key]['condition'])):
+    for dict_name in experimental_data_dict.keys():        
+        
+        for i in range(len(experimental_data_dict[dict_name]['condition'])):
             
             ## analyze dataset ##
             
             # process peak
-            peak_conc, peak_area, num_of_measurements, slope, y_int, rsq, df_decay, df_peak_processed = process_peak.process_peak(key, i, df_wide, decimals=2)
+            peak_conc, peak_area, num_of_measurements, slope, y_int, rsq, df_decay, df_peak_processed = process_peak.process_peak()
             
-            # fill resolved_peaks_dicts
-            resolved_peaks_dict[key]['condition'].append(key['condition'][i])
-            resolved_peaks_dict[key]['peak_area'].append(peak_area)
-            resolved_peaks_dict[key]['peak_concentration'].append(peak_conc)
-            resolved_peaks_dict[key]['linearized_decay_fit']['negative_decay_const'].append(slope)
-            resolved_peaks_dict[key]['linearized_decay_fit']['ln_A'].append(y_int)
-            resolved_peaks_dict[key]['linearized_decay_fit']['RSQ'].append(rsq)
-            resolved_peaks_dict[key]['linearized_decay_fit']['#_measurements_taken_during_decay'] = num_of_measurements
+            # initialize resolved_peaks_dict
+            resolved_peaks_dict.add_to(dict_name)
             
-            ## create plot of decay ##
-            exp_fig = plotting.plot_peak(df_peak_processed)
-            
-            ## create plot of linearized decay##
-            lin_fig = plotting.plot_lin_decay(df_decay, y_int, slope, rsq)
-            
+            # fill resolved_peaks_dict
+            resolved_peaks_dict.append_value(dict_name, dict_name['condition'][i])
+            resolved_peaks_dict.append_value(dict_name, 'peak_area', peak_area)
+            resolved_peaks_dict.append_value(dict_name, 'peak_concentration', peak_conc)
+            resolved_peaks_dict.append_value_to_fit_params(dict_name, 'negative_decay_const', slope)
+            resolved_peaks_dict.append_value_to_fit_params(dict_name, 'ln_A', y_int)
+            resolved_peaks_dict.append_value_to_fit_params(dict_name, 'RSQ', rsq)
+            resolved_peaks_dict.append_value_to_fit_params(dict_name, 'num_of_measurements', num_of_measurements)
             
             ## save peak data ##
-            fm.dump_processed_peak(processed_data_path, resolved_peaks_dict, resolved_peaks_dict[key]['condition'][i], df_peak_processed, df_decay, key, i, lin_fig, exp_fig)
             
-            ## save graph of peak ##
-            # df_peak_processed_wide=pd.melt(df_peak_processed, id_vars=['datetime'], value_vars=['pm_conc'])
-            # fig = px.line(df_peak_processed, x='datetime', y='value', color='variable')
-            # fig.update_layout(
-            #     yaxis_title=r'$\text{PM Concentration} \left(\displaystyle\frac{\mu{g}}{m^3}\right)$',
-            #     xaxis_title=r'Time (CST)'
-            # )
-            # fig.show()
-
+            # initialize dir for peak data
+            peak_name = f"{dict_name}_{dict_name['condition'][i]}_{i+1}"
+            peak_dir = fm.create_dir(processed_data_path, peak_name)
+            
+            # dump peak dictionary
+            # TODO: might not work! supposed to get index and dump to folder
+            resolved_peaks_dict.at_index(i, dict_name).dump_dict(peak_name, peak_dir)
+            print(f"\nanalysis of {peak_name} saved to {peak_dir}")
+            
+            # save non-linearized peak data
+            save_path = fm.concatenate_path(f"{peak_name}_peak.csv", peak_dir)
+            df_peak_processed.to_csv(save_path, index=False)
+            print(f"\ncsv of {peak_name} data saved to {peak_dir}")
+            
+            # save plot of non-linearized peak data
+            exp_fig = plotting.plot_peak(df_peak_processed)
+            save_path = fm.concatenate_path(f"{peak_name}_peak.png", peak_dir)
+            exp_fig.savefig(save_path, bbox_inches='tight', dpi=600)
+            print(f"\ngraph of {peak_name} saved to {peak_dir}")
+            
+            # save linearized decay data
+            save_path = fm.concatenate_path(f"{peak_name}_lin_decay.csv", peak_dir)
+            df_decay.to_csv(save_path, index=False)
+            print(f"\ncsv of linearized {peak_name} decay data saved to {peak_dir}")
+            
+            # save plot of linearized decay
+            lin_fig = plotting.plot_lin_decay(df_decay, y_int, slope, rsq)
+            save_path = fm.concatenate_path(f"{peak_name}_lin_decay.png", peak_dir)
+            lin_fig.savefig(save_path, bbox_inches="tight",dpi=600)
+            print(f"\ngraph of linearized decay of {peak_name} saved to {peak_dir}")
             
     # save analysis of ENTIRE dataset
-    fm.dump_dict(resolved_peaks_dict, f'pm_analysis', processed_data_path)
-    print(f'\analysis of {experiment_date} saved to {processed_data_path}')
-
+    resolved_peaks_dict.dump_dict(f'pm_analysis', processed_data_path)
+    messagebox.showinfo(f'analysis saved to: \n{processed_data_path}\n')
+    print(f'\nprocess finished with exit code 0\n\n')
 pm_analysis()

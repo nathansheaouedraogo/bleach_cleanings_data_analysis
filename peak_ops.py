@@ -3,7 +3,7 @@
 ## in order to make it easier to fix and more modular 
 import integrate_peak 
 import lin_reg
-import numpy as np
+from time_wrangling import scale_measurements 
 
 def load_peak(experimental_dict, i, df_wide):
     
@@ -32,7 +32,7 @@ def load_peak(experimental_dict, i, df_wide):
     
     # output message 
     print(f'\n\n~~~Loading experiment {i+1}~~~')
-    print(f'\n            Condition:    {experimental_dict['condition'][i]}')
+    print(f'\n            Condition:    {experimental_dict["condition"][i]}')
     print(f'\n      Peak Start Time:    {peak_start_time}')
     print(f'\n      Peak Start Time:    {peak_end_time}')
     print(f'\nBackground Start Time:    {background_start_time}')
@@ -71,7 +71,6 @@ def subtract_background(df_wide, peak_start_index, peak_end_index, background_va
 def calculate_peak_area_and_conc(df_peak_processed):
     """
     Processes area, peak, (and returns them!)
-    Defaults to rounding background to 2 decimals. Can be changed!
     """
     
     
@@ -89,12 +88,18 @@ def calculate_peak_area_and_conc(df_peak_processed):
     
     return peak_conc, peak_area 
 
-def calculate_decay(df_peak_processed, rsq_decimals=4):
+def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=4):
     
     """
-    Linearizes decay and calculates regression. 
-    Returns number of measurements in decay, slope, y_int, rsq, and linearized dataset
-    NOTE: rsq_decimals defaults to 4 decimal places. Change if wanted!
+    Summary:
+        Linearizes decay and calculates regression. 
+        Returns number of measurements in decay, slope, y_int, rsq, and linearized dataset
+        Units are in terms of measurements per hour
+        NOTE: rsq_decimals defaults to 4 decimal places. Change if wanted!   
+    Args: 
+        df_peak_processed (_dataframe_): background corrected dataframe of peak
+        time_resolution (_int_, _float_): time resolution of measurements
+        timescale (_str_): units of time resolution
     """
     
     # filter dataframe to decay
@@ -106,22 +111,25 @@ def calculate_decay(df_peak_processed, rsq_decimals=4):
     # linearize decays
     df_decay['ln_pm_conc'] = lin_reg.linearized(df_decay.pm_conc.to_list())
     
-    # ie decay time = #measurements/time_resolution 
-    df_decay['decay_time'] = [idx for idx in df_decay.index]
+    # each index coresponds to 1 measurement
+    # code below converts the index to appropriate timestamp in minutes
+    # NOTE: code may be modified to change scale to units of per second or per hour
+    df_decay['minutes'] = [scale_measurements(idx, time_resolution, timescale) for idx in df_decay.index]
     print(f'          #measurements:    {max(df_decay.index)}')
     
     # set x data, y data
-    x_data = df_decay['decay_time'].to_numpy().reshape(-1,1)
+    x_data = df_decay['minutes'].to_numpy().reshape(-1,1)
     y_data = df_decay['ln_pm_conc'].to_numpy().reshape(-1,1)
     
     # calculate regression
     slope, y_int, rsq = lin_reg.regression(x_data, y_data)
     
     # calculate linear fit
-    df_decay['best_fit'] = [slope*x+y_int for x in df_decay['decay_time']]
+    df_decay['best_fit'] = [slope*x+y_int for x in df_decay['minutes']]
     
     print(f'                  slope:    {slope}')
     print(f'                  y_int:    {y_int}')
     print(f'                  r_sqr:    {rsq}')
     
     return max(df_decay.index), slope, y_int, round(rsq, rsq_decimals), df_decay
+

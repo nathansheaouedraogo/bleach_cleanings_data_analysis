@@ -13,7 +13,7 @@ def linearized(y_data, peak=None):
         NOTE: function sets any value <= 0 to zero! 
     Args:
         >>> y_data (_array_): array like numerical data to be linearized 
-        >>> peak (_int_, _float_): user defined the peak concentration. If set to none, will pick first index. 
+        >>> peak (_int_, _float_): user defined the peak concentration. If set to none, will pick first index.
         
     Returns: 
         >>> lin_y_data (_array_): normalized y_data

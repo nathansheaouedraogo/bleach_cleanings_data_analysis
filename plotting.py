@@ -29,8 +29,8 @@ def plot_lin_decay(df_decay, y_int, slope, rsq, sig_figs=4):
     """
     
     fig, ax = plt.subplots(1, figsize=(8, 4))
-    ax.scatter(df_decay['decay_time'], df_decay['ln_pm_conc'], color='k')
-    ax.line(df_decay['decay_time'], df_decay['best_fit'], color='k--')
+    ax.scatter(df_decay['minutes'], df_decay['ln_pm_conc'], color='k')
+    ax.line(df_decay['minutes'], df_decay['best_fit'], color='k--')
     
     # eqn
     y_int_str = str(np.around(y_int, sig_figs)[0])
@@ -40,30 +40,12 @@ def plot_lin_decay(df_decay, y_int, slope, rsq, sig_figs=4):
     r_sqr_str = str(rsq)
     
     # x-axis
-    x_axis_min = df_decay['decay_time'].iat[0]
-    x_axis_max = df_decay['decay_time'].iat[-1]
+    x_axis_min = df_decay['minutes'].iat[0]
+    x_axis_max = df_decay['minutes'].iat[-1]
     ax.set_xlim(x_axis_min, x_axis_max)
-    while True:
-        time_int = simpledialog.askstring(message='please choose time interval of measurements (Hours, Minutes, Seconds)')
-        if not time_int:
-            messagebox.showerror(f'No label inputted!')
-            continue
-        elif time_int.lower() == 'hours':
-            ax.set_xlabel(f'Hours')
-            eqn_rsq = r'\begin{align*}y&=\tau\left(x\right)y_int\\{\tau}&=slope{hr^{-1}}\\{R^2}&=rsq\end{align*}'.replace('y_int', y_int_str).replace('slope', slope_str).replace('rsq', r_sqr_str)
-            break
-        elif time_int.lower() == 'minutes':
-            ax.set_xlabel(f'Minutes')
-            eqn_rsq = r'\begin{align*}y&=\tau\left(x\right)y_int\\{\tau}&=slope{min^{-1}}\\{R^2}&=rsq\end{align*}'.replace('y_int', y_int_str).replace('slope', slope_str).replace('rsq', r_sqr_str)
-            break
-        elif time_int.lower() == 'seconds':
-            ax.set_xlabel(f'Seconds')
-            eqn_rsq = r'\begin{align*}y&=\tau\left(x\right)y_int\\{\tau}&=slope{s^{-1}}\\{R^2}&=rsq\end{align*}'.replace('y_int', y_int_str).replace('slope', slope_str).replace('rsq', r_sqr_str)
-            break
-        else:
-            messagebox.showerror(f'Improper format, must be hours, minutes, or seconds!')
-            continue
-    
+    ax.set_xlabel(f'Minutes Since Decay')
+    eqn_rsq = r'\begin{align*}y&=\tau\left(x\right)y_int\\{\tau}&=slope{min^{-1}}\\{R^2}&=rsq\end{align*}'.replace('y_int', y_int_str).replace('slope', slope_str).replace('rsq', r_sqr_str)
+        
     # add equation, finish setting up x-axis
     textbox = at(eqn_rsq, loc='upper right')
     ax.add_artist(textbox)    

@@ -1,12 +1,9 @@
-## module handles all data wrangling and date inputs
-
 import json
 from tkinter import filedialog, messagebox, simpledialog
 import os
 from pathlib import Path
 from datetime import date
 
-# load/create directories
 def cwd():
     """
     returns absolute path of working directory
@@ -30,7 +27,7 @@ def create_dir(parent_dir_name, child_dir_name):
     if child_dir_name in os.listdir(parent_dir_path):
         for i in range(len(os.listdir(parent_dir_path))):
             if os.listdir(parent_dir_path)[i] == child_dir_name:
-                child_dir_name = f'{child_dir_name}_({i+2})'
+                child_dir_name = f"{child_dir_name}_({i+2})"
                 if child_dir_name in os.listdir(parent_dir_path):
                     continue
                 else:
@@ -39,21 +36,20 @@ def create_dir(parent_dir_name, child_dir_name):
     os.mkdir(os.path.join(parent_dir_path, child_dir_name))
     return path
 
-# load file(s)
 def select_raw_data():
     """
     Prompts user to select .csv file of raw data 
     """
     
-    raw_data_dir = concatenate_path('raw_data')
+    raw_data_dir = concatenate_path("raw_data")
     
-    title = f'Please select the raw data'
+    title = f"Please select the raw data"
     
     file = filedialog.askopenfilename(initialdir = raw_data_dir, filetypes=(("CSV Files", "*.csv"),), title=title)
     
     if not file:
-        messagebox.showerror(None, 'Fatal Error: \n\nNo raw data selected!')
-        print(f'\nprocess finished with exit code 1 (no raw data selected)\n')
+        messagebox.showerror(None, "Fatal Error: \n\nNo raw data selected!")
+        print(f"\nprocess finished with exit code 1 (no raw data selected)\n")
         exit()
     else:
         return file    
@@ -65,65 +61,65 @@ def load_experimental_data_dict():
         experimental_data_dict = {
 
     # input times for bleachings with air freshener
-    'bleachings_with_airfresh':{ 
+    "bleachings_with_airfresh":{ 
 
         # refers to lighting condition of a specific peak (or any other identifier you want)
-        'condition' : [],
+        "condition" : [],
 
         # start of the peak of interest
-        'peak_start_datetime' : [],
+        "peak_start_datetime" : [],
 
         # end of the peak of interest
-        'peak_end_datetime' : [],
+        "peak_end_datetime" : [],
 
         # start of the background
-        'background_start_datetime' : [],
+        "background_start_datetime" : [],
         
         # end of the background
-        'background_end_datetime' : [],
+        "background_end_datetime" : []
         },
     
     
         # input times for bleachings without air freshener
-        'bleachings_without_airfresh':{ 
+        "bleachings_without_airfresh":{ 
 
             # refers to lighting condition of a specific peak (or any other identifier you want)
-            'condition' : [],
+            "condition" : [],
 
             # start of the peak of interest
-            'peak_start_datetime' : [],
+            "peak_start_datetime" : [],
 
             # end of the peak of interest
-            'peak_end_datetime' : [],
+            "peak_end_datetime" : [],
 
             # start of the background
-            'background_start_datetime' : [],
+            "background_start_datetime" : [],
             
             # end of the background
-            'background_end_datetime' : [],
-            },
+            "background_end_datetime" : []
+            }
         }
     """
     
-    experiment_data_dir_path = concatenate_path('experimental_times_dicts')
+    experiment_data_dir_path = concatenate_path("experimental_times_dicts")
     
-    title = f'Please select the filled dictionary of experimental times'
+    title = f"Please select the filled dictionary of experimental times"
     
     file = filedialog.askopenfilename(initialdir = experiment_data_dir_path, filetypes=(("JSON files", "*.json"),), title=title)
     
     
     if not file:
-        messagebox.showerror(None, f'Fatal Error: \n\nNo dictionary selected!')
-        print(f'\nprocess finished with exit code 1 (no dictionary selected)\n')
+        messagebox.showerror(None, f"Fatal Error: \n\nNo dictionary selected!")
+        print(f"\nprocess finished with exit code 1 (no dictionary selected)\n")
         exit() 
     else:
             try: 
-                with open(file, 'r') as f:
+                with open(file, "r") as f:
                     print(f)
                     json.load(f)
             except: 
-                messagebox.showerror(None, f'Fatal Error: \n\nSelected file improperly formatted!\n\nFile: {file}!')
-                print(f'\nprocess finished with exit code 1 (improperly formatted file):\n{file}')
+                messagebox.showerror(None, f"Fatal Error: \n\nSelected file improperly formatted!\n\nFile: {file}!")
+                print(f"\nprocess finished with exit code 1 (improperly formatted file):\n{file}")
                 exit() 
             else: 
                 with open(file) as f: 
@@ -131,152 +127,101 @@ def load_experimental_data_dict():
 
 def dump_dict(dict, file_name, parent_dir_path):
     """
-    creates .txt file of inputted dict
+    dumps .json of inputted dict to specified directory
     """
-    file_path = os.path.join(parent_dir_path, f'{file_name}.json')
-    with open(file_path, 'w') as f:
+    file_path = os.path.join(parent_dir_path, f"{file_name}.json")
+    with open(file_path, "w") as f:
         json.dump(dict, f, indent=4) 
 
 
 def input_date_of_experiment():
-    
+    """ 
+    Function prompts user to input date of experiment(s). 
+    """
     while True:
         
-        messagebox.showinfo(message='In the following prompts, please input the date(s) of the experiment(s)')
+        messagebox.showinfo(message="In the following prompts, please input the date(s) of the experiment(s)\n")
         
         # INPUT DATE(S) OF EXPERIMENTS 
-        ## IF SINGLE EXPERIMENT: 'yyyy-mm-dd'
-        ## IF RANGE OF EXPERIMENTS: 'yyyy-mm-dd - yyyy-mm-dd'
+        ## IF SINGLE EXPERIMENT: "yyyy-mm-dd"
+        ## IF RANGE OF EXPERIMENTS: "yyyy-mm-dd - yyyy-mm-dd"
         # ask if muliple days
-        message = 'were the experiments performed on multiple days?'
+        message = f"were the experiments performed on multiple days?\n"
         result = messagebox.askyesnocancel(title=None, message=message)
         
         if result is None: 
-            messagebox.showerror(None, 'Fatal Error: \n\nNo no date inputted!')
-            print(f'\nprocess finished with exit code 1 (no date inputted)\n')
+            messagebox.showerror(None, "Fatal Error: \n\nNo no date inputted!\n")
+            print(f"\nprocess finished with exit code 1 (no date inputted)\n")
             exit()        
         
         # experiments performed on single day
         elif result == False:
-            message_input_date = f'Input the date of the experiment as follows: \n\nyyyy-mm-dd'
+            message_input_date = f"Input the date of the experiment as follows: \n\nyyyy-mm-dd\n"
             experiment_date = simpledialog.askstring(title=None, prompt=message_input_date)
             
             # test validity of date
             try: 
                 date.fromisoformat(experiment_date)
             except ValueError():
-                messagebox.showerror(None, 'Fatal Error: \n\nImproper date format!')
-                print(f'\nprocess finished with exit code 1 (improper date format: {experiment_date})\n')
+                messagebox.showerror(None, "Fatal Error: \n\nImproper date format!\n")
+                print(f"\nprocess finished with exit code 1 (improper date format: {experiment_date})\n")
                 exit()
             else: 
                 
-                message_line_1 = 'Press "yes" if the dates are correct, "no" if they are incorrect, or "cancel" to exit'
-                message_line_2 = f'\nyear:   \t{experiment_date[0:4]}'
-                message_line_3 = f'\nmonth:  \t{experiment_date[5:7]}'
-                message_line_4 = f'\nday:    \t{experiment_date[8:]}'
-                message = message_line_1+'\n'+message_line_2+message_line_3+message_line_4
+                message_line_1 = "Press 'yes' if the dates are correct, 'no' if they are incorrect, or 'cancel' to exit"
+                message_line_2 = f"\nyear:   \t{experiment_date[0:4]}"
+                message_line_3 = f"\nmonth:  \t{experiment_date[5:7]}"
+                message_line_4 = f"\nday:    \t{experiment_date[8:]}"
+                message = message_line_1+"\n"+message_line_2+message_line_3+message_line_4
                 result = messagebox.askyesnocancel(title=None, message=message)
                 if result == True: 
                     break
                 elif result == False:
                     continue 
                 else: 
-                    messagebox.showerror(None, 'Fatal Error: \n\nNo date inputted!')
-                    print(f'\nprocess finished with exit code 1 (no date inputted)\n')
+                    messagebox.showerror(None, "Fatal Error: \n\nNo date inputted!\n")
+                    print(f"\nprocess finished with exit code 1 (no date inputted)\n")
                     exit()
             
         # experiments performed on multiple days
         else:
-            message_input_date = f'Input the first date of the experiment as follows: \n\nyyyy-mm-dd'
+            message_input_date = f"Input the first date of the experiment as follows: \n\nyyyy-mm-dd"
             date_1 = simpledialog.askstring(title=None, prompt=message_input_date)
-            message_input_date = f'Input the last date of the experiment as follows: \n\nyyyy-mm-dd'
+            message_input_date = f"Input the last date of the experiment as follows: \n\nyyyy-mm-dd"
             date_2 = simpledialog.askstring(title=None, prompt=message_input_date)
-
+            
             # test validity of date
             try: 
                 date.fromisoformat(date_1)
             except:
-                messagebox.showerror(None, 'Fatal Error: \n\nImproper date format!')
-                print(f'\nprocess finished with exit code 1 (improper date format: "{date_1} - {date_2}")\n')
+                messagebox.showerror(None, "Fatal Error: \n\nImproper date format!\n")
+                print(f"\nprocess finished with exit code 1 (improper date format: '{date_1} - {date_2}')\n")
                 exit()
             else: 
                 try: 
                     date.fromisoformat(date_2)
                 except:
-                    messagebox.showerror(None, 'Fatal Error: \n\nImproper date format!')
-                    print(f'\nprocess finished with exit code 1 (improper date format: "{date_2} - {date_2}")\n')
+                    messagebox.showerror(None, "Fatal Error: \n\nImproper date format!\n")
+                    print(f"\nprocess finished with exit code 1 (improper date format: '{date_1} - {date_2}')\n")
                     exit()
             
             
-            message_line_1 = 'Press "yes" if the dates are correct, "no" if they are incorrect, or "cancel" to exit'
-            message_line_2 = f'\nyear:   \t{date_1[0:4]}'
-            message_line_3 = f'\nmonth:  \t{date_1[5:7]}'
-            message_line_4 = f'\nday:    \t{date_1[8:]}'
-            message_line_5 = f'\nyear:   \t{date_2[0:4]}'
-            message_line_6 = f'\nmonth:  \t{date_2[5:7]}'
-            message_line_7 = f'\nday:    \t{date_2[8:]}'
-            message = message_line_1+'\n\nFirst Date'+message_line_2+message_line_3+message_line_4+'\n\nLast Date'+message_line_5+message_line_6+message_line_7
+            message_line_1 = "Press 'yes' if the dates are correct, 'no' if they are incorrect, or 'cancel' to exit"
+            message_line_2 = f"\nyear:   \t{date_1[0:4]}"
+            message_line_3 = f"\nmonth:  \t{date_1[5:7]}"
+            message_line_4 = f"\nday:    \t{date_1[8:]}"
+            message_line_5 = f"\nyear:   \t{date_2[0:4]}"
+            message_line_6 = f"\nmonth:  \t{date_2[5:7]}"
+            message_line_7 = f"\nday:    \t{date_2[8:]}"
+            message = message_line_1+"\n\nFirst Date"+message_line_2+message_line_3+message_line_4+"\n\nLast Date"+message_line_5+message_line_6+message_line_7
             result = messagebox.askyesnocancel(title=None, message=message)
             if result == True: 
-                experiment_date = date_1 + ' - ' + date_2
+                experiment_date = date_1 + " - " + date_2
                 break
             elif result == False:
                 continue 
             else: 
-                messagebox.showerror(None, 'Fatal Error: \n\nNo date inputted!')
-                print(f'\nprocess finished with exit code 1 (no date inputted)\n')
+                messagebox.showerror(None, "Fatal Error: \n\nNo date inputted!")
+                print(f"\nprocess finished with exit code 1 (no date inputted)\n")
                 exit()
     return experiment_date
-
-
-def dump_processed_peak(processed_data_path, resolved_peaks_dict, condition, df_peak_processed, df_decay, key, i, lin_fig, exp_fig):
-    
-    """
-    Summary: 
-        Function creates a child dir and saves ALL data processed by pm_analysis for EACH peak
-    Args: 
-        processed_data_path (_filepath_): path of processed data for dataset
-        resolved_peaks_dict (_dict_): dictionary of resolved peaks
-        condition (_str_): identifier for peak
-        df_peak_processed: (_dataframe_): dataframe of background corrected peak
-        df_decay (_dataframe_): dataframe of linearized decay
-        key (_str_): identifier for dataset 
-        i (_int_): iterator
-        lin_fig (_Figure_): matplotlib figure of linearized decay
-        exp_fig (_Figure_): matplotlib figure of exponential peak
-    """
-    # create child dir for peak
-    peak_processed_data_path = concatenate_path(f'{key}', processed_data_path)
-    os.mkdir(peak_processed_data_path)
-    
-    # name peak
-    peak_name = f'{i+1}_{key}_{condition}'
-    
-    # save exponential data of peak 
-    save_path = concatenate_path(f'peak_{peak_name}.csv', peak_processed_data_path)
-    df_peak_processed.to_csv(save_path, index=False)
-    print(f'\ncsv of {peak_name} data saved to {save_path}')
-
-    # save analysis of peak
-    dump_dict(resolved_peaks_dict[key], f'pm_analysis_{peak_name}', peak_processed_data_path)
-    print(f'\analysis of {peak_name} saved to {peak_processed_data_path}')
-    
-    # save graph of exponential peak
-    save_path = concatenate_path(f'peak_{peak_name}.png', peak_processed_data_path)
-    exp_fig.savefig(save_path, bbox_inches='tight',dpi=600)
-    print(f'\ngraph of {peak_name} saved to {save_path}')
-    
-    # save csv of linearized decay
-    save_path = concatenate_path(f'lin_decay_{peak_name}.csv', peak_processed_data_path)
-    df_decay.to_csv(save_path, index=False)
-    print(f'\ncsv of linearized {peak_name} data saved to {save_path}')
-    
-    # save linearized decay figure
-    save_path = concatenate_path(f'lin_decay_{peak_name}.png', peak_processed_data_path)
-    lin_fig.savefig(save_path, bbox_inches='tight',dpi=600)
-    print(f'\ngraph of linearized decay of {peak_name} saved to {save_path}')
-    
-
-
-
-
