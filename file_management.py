@@ -25,22 +25,19 @@ def create_dir(parent_dir_name, child_dir_name):
     creates a child inside parent dir which itself is in the cwd
     """
     
-    parent_dir_path = os.path.join(cwd(), parent_dir_name)
-    
+    # check if path is already occupied
+    parent_dir_path = concatenate_path(parent_dir_name, cwd())
+    if child_dir_name in os.listdir(parent_dir_path):
+        for i in range(len(os.listdir(parent_dir_path))):
+            if os.listdir(parent_dir_path)[i] == child_dir_name:
+                child_dir_name = f'{child_dir_name}_({i+2})'
+                if child_dir_name in os.listdir(parent_dir_path):
+                    continue
+                else:
+                    break
+    path = concatenate_path(child_dir_name, parent_dir_path)
     os.mkdir(os.path.join(parent_dir_path, child_dir_name))
-
-
-def create_processed_data_dir(date):
-    
-    """
-    Creates directory in 'processed_data' for all processed data from specific date
-    Returns the absolute path of said directory
-    """
-    
-    path = os.path.join(cwd(), f'processed_data\{date}')
-    os.mkdir(path)
     return path
-
 
 # load file(s)
 def select_raw_data():
@@ -55,7 +52,7 @@ def select_raw_data():
     file = filedialog.askopenfilename(initialdir = raw_data_dir, filetypes=(("CSV Files", "*.csv"),), title=title)
     
     if not file:
-        messagebox.showerror(None, 'Fatal Error: \nNo raw data selected!')
+        messagebox.showerror(None, 'Fatal Error: \n\nNo raw data selected!')
         print(f'\nprocess finished with exit code 1 (no raw data selected)\n')
         exit()
     else:
@@ -63,7 +60,7 @@ def select_raw_data():
 
 def load_experimental_data_dict():
     """
-    Prompts user to select .txt file of experimental start/end times
+    Prompts user to select .json file of experimental start/end times
     NOTE: loaded file must be formatted in the following way: 
         experimental_data_dict = {
 
@@ -112,29 +109,31 @@ def load_experimental_data_dict():
     
     title = f'Please select the filled dictionary of experimental times'
     
-    file = filedialog.askopenfilename(initialdir = experiment_data_dir_path, filetypes=(("Text Files", "*.txt"),), title=title)
+    file = filedialog.askopenfilename(initialdir = experiment_data_dir_path, filetypes=(("JSON files", "*.json"),), title=title)
+    
     
     if not file:
-        messagebox.showerror(None, 'Fatal Error: \nNo dictionary selected!')
+        messagebox.showerror(None, f'Fatal Error: \n\nNo dictionary selected!')
         print(f'\nprocess finished with exit code 1 (no dictionary selected)\n')
         exit() 
     else:
-        try: 
-            with open(file) as f: 
-                json.loads(f.read())
-        except: 
-            messagebox.showerror(None, 'Fatal Error: \n\Selected file improperly formatted!\n\nFile: {file}!')
-            print(f'\nprocess finished with exit code 1 (improperly formatted file):\n{file}')
-            exit() 
-        else: 
-            with open(file) as f: 
-                return json.loads(f.read()) #TODO: check for input validity
+            try: 
+                with open(file, 'r') as f:
+                    print(f)
+                    json.load(f)
+            except: 
+                messagebox.showerror(None, f'Fatal Error: \n\nSelected file improperly formatted!\n\nFile: {file}!')
+                print(f'\nprocess finished with exit code 1 (improperly formatted file):\n{file}')
+                exit() 
+            else: 
+                with open(file) as f: 
+                    return json.load(f) #TODO: check for input validity
 
 def dump_dict(dict, file_name, parent_dir_path):
     """
     creates .txt file of inputted dict
     """
-    file_path = os.path.join(parent_dir_path, file_name)
+    file_path = os.path.join(parent_dir_path, f'{file_name}.json')
     with open(file_path, 'w') as f:
         json.dump(dict, f, indent=4) 
 
@@ -151,8 +150,9 @@ def input_date_of_experiment():
         # ask if muliple days
         message = 'were the experiments performed on multiple days?'
         result = messagebox.askyesnocancel(title=None, message=message)
-        if result == None: 
-            messagebox.showerror(None, 'Fatal Error: \nNo no date inputted!')
+        
+        if result is None: 
+            messagebox.showerror(None, 'Fatal Error: \n\nNo no date inputted!')
             print(f'\nprocess finished with exit code 1 (no date inputted)\n')
             exit()        
         
@@ -165,7 +165,7 @@ def input_date_of_experiment():
             try: 
                 date.fromisoformat(experiment_date)
             except ValueError():
-                messagebox.showerror(None, 'Fatal Error: \nImproper date format!')
+                messagebox.showerror(None, 'Fatal Error: \n\nImproper date format!')
                 print(f'\nprocess finished with exit code 1 (improper date format: {experiment_date})\n')
                 exit()
             else: 
@@ -181,7 +181,7 @@ def input_date_of_experiment():
                 elif result == False:
                     continue 
                 else: 
-                    messagebox.showerror(None, 'Fatal Error: \nNo date inputted!')
+                    messagebox.showerror(None, 'Fatal Error: \n\nNo date inputted!')
                     print(f'\nprocess finished with exit code 1 (no date inputted)\n')
                     exit()
             
@@ -195,16 +195,16 @@ def input_date_of_experiment():
             # test validity of date
             try: 
                 date.fromisoformat(date_1)
-            except ValueError():
-                messagebox.showerror(None, 'Fatal Error: \nImproper date format!')
-                print(f'\nprocess finished with exit code 1 (improper date format: {date_1})\n')
+            except:
+                messagebox.showerror(None, 'Fatal Error: \n\nImproper date format!')
+                print(f'\nprocess finished with exit code 1 (improper date format: "{date_1} - {date_2}")\n')
                 exit()
             else: 
                 try: 
                     date.fromisoformat(date_2)
-                except ValueError():
-                    messagebox.showerror(None, 'Fatal Error: \nImproper date format!')
-                    print(f'\nprocess finished with exit code 1 (improper date format: {date_2})\n')
+                except:
+                    messagebox.showerror(None, 'Fatal Error: \n\nImproper date format!')
+                    print(f'\nprocess finished with exit code 1 (improper date format: "{date_2} - {date_2}")\n')
                     exit()
             
             
@@ -223,13 +223,13 @@ def input_date_of_experiment():
             elif result == False:
                 continue 
             else: 
-                messagebox.showerror(None, 'Fatal Error: \nNo date inputted!')
+                messagebox.showerror(None, 'Fatal Error: \n\nNo date inputted!')
                 print(f'\nprocess finished with exit code 1 (no date inputted)\n')
                 exit()
     return experiment_date
 
 
-def dump_processed_peak(processed_data_path, resolved_peaks_dict, condition, df_peak_processed, df_decay, key, i, fig):
+def dump_processed_peak(processed_data_path, resolved_peaks_dict, condition, df_peak_processed, df_decay, key, i, lin_fig, exp_fig):
     
     """
     Summary: 
@@ -242,7 +242,8 @@ def dump_processed_peak(processed_data_path, resolved_peaks_dict, condition, df_
         df_decay (_dataframe_): dataframe of linearized decay
         key (_str_): identifier for dataset 
         i (_int_): iterator
-        fig (_Figure_): matplotlib figure of linearized decay
+        lin_fig (_Figure_): matplotlib figure of linearized decay
+        exp_fig (_Figure_): matplotlib figure of exponential peak
     """
     # create child dir for peak
     peak_processed_data_path = concatenate_path(f'{key}', processed_data_path)
@@ -254,20 +255,28 @@ def dump_processed_peak(processed_data_path, resolved_peaks_dict, condition, df_
     # save exponential data of peak 
     save_path = concatenate_path(f'peak_{peak_name}.csv', peak_processed_data_path)
     df_peak_processed.to_csv(save_path, index=False)
-    
+    print(f'\ncsv of {peak_name} data saved to {save_path}')
+
     # save analysis of peak
-    dump_dict(resolved_peaks_dict[key], f'pm_analysis_{peak_name}.txt', peak_processed_data_path)
+    dump_dict(resolved_peaks_dict[key], f'pm_analysis_{peak_name}', peak_processed_data_path)
     print(f'\analysis of {peak_name} saved to {peak_processed_data_path}')
+    
+    # save graph of exponential peak
+    save_path = concatenate_path(f'peak_{peak_name}.png', peak_processed_data_path)
+    exp_fig.savefig(save_path, bbox_inches='tight',dpi=600)
+    print(f'\ngraph of {peak_name} saved to {save_path}')
     
     # save csv of linearized decay
     save_path = concatenate_path(f'lin_decay_{peak_name}.csv', peak_processed_data_path)
     df_decay.to_csv(save_path, index=False)
-    print(f'\ndata of linearized decay of {peak_name} saved to {peak_processed_data_path}')
+    print(f'\ncsv of linearized {peak_name} data saved to {save_path}')
     
-    # save figure
+    # save linearized decay figure
     save_path = concatenate_path(f'lin_decay_{peak_name}.png', peak_processed_data_path)
-    fig.savefig(save_path, bbox_inches='tight',dpi=600)
-    print(f'\ngraph of linearized decay of {peak_name} saved to {peak_processed_data_path}')
+    lin_fig.savefig(save_path, bbox_inches='tight',dpi=600)
+    print(f'\ngraph of linearized decay of {peak_name} saved to {save_path}')
+    
+
 
 
 

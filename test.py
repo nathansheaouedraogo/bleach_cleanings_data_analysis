@@ -3,7 +3,7 @@ import plotly.express as px
 import file_management as fm
 import numpy as np
 from tkinter import messagebox, simpledialog
-import plot_lin_decay
+import plotting
 import process_peak 
 
 
