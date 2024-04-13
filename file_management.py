@@ -1,3 +1,5 @@
+## module handles all data wrangling and date inputs
+
 import json
 from tkinter import filedialog, messagebox, simpledialog
 import os
