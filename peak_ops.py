@@ -1,9 +1,9 @@
 ## Module performs calculations and data wrangling on peaks
 ## does all the heavy lifting. decided to move it outside of process_peak module 
 ## in order to make it easier to fix and more modular 
-import pandas as pd
 import integrate_peak 
 import lin_reg
+import numpy as np
 
 def load_peak(experimental_dict, i, df_wide):
     
@@ -51,7 +51,7 @@ def background(background_start_index, background_end_index, df_wide):
     print(f'\n           Background:    {background}')
     return background
 
-def subtract_background(df_wide, peak_start_index, peak_end_index, background_value, decimals):
+def subtract_background(df_wide, peak_start_index, peak_end_index, background_value):
     
     """
     Filters df_wide down to selected peak range and corrects for background value
@@ -68,7 +68,7 @@ def subtract_background(df_wide, peak_start_index, peak_end_index, background_va
     
     return df_peak_processed
 
-def calculate_peak_area_and_conc(df_peak_processed, decimals):
+def calculate_peak_area_and_conc(df_peak_processed):
     """
     Processes area, peak, (and returns them!)
     Defaults to rounding background to 2 decimals. Can be changed!
@@ -80,7 +80,7 @@ def calculate_peak_area_and_conc(df_peak_processed, decimals):
     for idx in range(len(df_peak_processed['datetime'])):
         elapsed_time.append(idx)
     peak_conc = df_peak_processed.pm_conc.max()
-    peak_area = round(integrate_peak.integrate_peak(elapsed_time, df_peak_processed['pm_conc'].to_list()), decimals)
+    peak_area = integrate_peak.integrate_peak(elapsed_time, df_peak_processed['pm_conc'].to_list())
     
     # output message
     print(f'\n\n~~~Calculating Peak Area\Conc.~~~')
@@ -89,11 +89,12 @@ def calculate_peak_area_and_conc(df_peak_processed, decimals):
     
     return peak_conc, peak_area 
 
-def calculate_decay(df_peak_processed):
+def calculate_decay(df_peak_processed, rsq_decimals=4):
     
     """
     Linearizes decay and calculates regression. 
-    Returns number of measurements in decay, slope, y_int, and rsq 
+    Returns number of measurements in decay, slope, y_int, rsq, and linearized dataset
+    NOTE: rsq_decimals defaults to 4 decimal places. Change if wanted!
     """
     
     # filter dataframe to decay
@@ -108,15 +109,19 @@ def calculate_decay(df_peak_processed):
     # ie decay time = #measurements/time_resolution 
     df_decay['decay_time'] = [idx for idx in df_decay.index]
     print(f'          #measurements:    {max(df_decay.index)}')
-
+    
     # set x data, y data
     x_data = df_decay['decay_time'].to_numpy().reshape(-1,1)
     y_data = df_decay['ln_pm_conc'].to_numpy().reshape(-1,1)
-
+    
     # calculate regression
     slope, y_int, rsq = lin_reg.regression(x_data, y_data)
+    
+    # calculate linear fit
+    df_decay['best_fit'] = [slope*x+y_int for x in df_decay['decay_time']]
+    
     print(f'                  slope:    {slope}')
     print(f'                  y_int:    {y_int}')
     print(f'                  r_sqr:    {rsq}')
     
-    return max(df_decay.index), slope, y_int, rsq
+    return max(df_decay.index), slope, y_int, round(rsq, rsq_decimals), df_decay

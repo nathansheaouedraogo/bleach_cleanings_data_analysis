@@ -13,7 +13,7 @@ def cwd():
     """
     return Path(__file__).absolute().parent
 
-def load_dir(child_dir_name, parent_dir_path=cwd()):
+def concatenate_path(child_dir_name, parent_dir_path=cwd()):
     """
     returns path of selected directory, defaulted to cwd
     NOTE: child_dir_name is the string NAME whereas parent_dir_path is a FILEPATH! 
@@ -48,7 +48,7 @@ def select_raw_data():
     Prompts user to select .csv file of raw data 
     """
     
-    raw_data_dir = load_dir('raw_data')
+    raw_data_dir = concatenate_path('raw_data')
     
     title = f'Please select the raw data'
     
@@ -108,7 +108,7 @@ def load_experimental_data_dict():
         }
     """
     
-    experiment_data_dir_path = load_dir('experimental_times_dicts')
+    experiment_data_dir_path = concatenate_path('experimental_times_dicts')
     
     title = f'Please select the filled dictionary of experimental times'
     
@@ -123,18 +123,18 @@ def load_experimental_data_dict():
             with open(file) as f: 
                 json.loads(f.read())
         except: 
-            messagebox.showerror(None, 'Fatal Error: \n\nFile improperly formatted!\n\nFile: {file}!')
+            messagebox.showerror(None, 'Fatal Error: \n\Selected file improperly formatted!\n\nFile: {file}!')
             print(f'\nprocess finished with exit code 1 (improperly formatted file):\n{file}')
             exit() 
         else: 
             with open(file) as f: 
-                return json.loads(f.read())
+                return json.loads(f.read()) #TODO: check for input validity
 
-def dump_dict(dict, file_name):
+def dump_dict(dict, file_name, parent_dir_path):
     """
     creates .txt file of inputted dict
     """
-    file_path = os.path.join(cwd(), file_name)
+    file_path = os.path.join(parent_dir_path, file_name)
     with open(file_path, 'w') as f:
         json.dump(dict, f, indent=4) 
 
@@ -229,6 +229,45 @@ def input_date_of_experiment():
     return experiment_date
 
 
+def dump_processed_peak(processed_data_path, resolved_peaks_dict, condition, df_peak_processed, df_decay, key, i, fig):
+    
+    """
+    Summary: 
+        Function creates a child dir and saves ALL data processed by pm_analysis for EACH peak
+    Args: 
+        processed_data_path (_filepath_): path of processed data for dataset
+        resolved_peaks_dict (_dict_): dictionary of resolved peaks
+        condition (_str_): identifier for peak
+        df_peak_processed: (_dataframe_): dataframe of background corrected peak
+        df_decay (_dataframe_): dataframe of linearized decay
+        key (_str_): identifier for dataset 
+        i (_int_): iterator
+        fig (_Figure_): matplotlib figure of linearized decay
+    """
+    # create child dir for peak
+    peak_processed_data_path = concatenate_path(f'{key}', processed_data_path)
+    os.mkdir(peak_processed_data_path)
+    
+    # name peak
+    peak_name = f'{i+1}_{key}_{condition}'
+    
+    # save exponential data of peak 
+    save_path = concatenate_path(f'peak_{peak_name}.csv', peak_processed_data_path)
+    df_peak_processed.to_csv(save_path, index=False)
+    
+    # save analysis of peak
+    dump_dict(resolved_peaks_dict[key], f'pm_analysis_{peak_name}.txt', peak_processed_data_path)
+    print(f'\analysis of {peak_name} saved to {peak_processed_data_path}')
+    
+    # save csv of linearized decay
+    save_path = concatenate_path(f'lin_decay_{peak_name}.csv', peak_processed_data_path)
+    df_decay.to_csv(save_path, index=False)
+    print(f'\ndata of linearized decay of {peak_name} saved to {peak_processed_data_path}')
+    
+    # save figure
+    save_path = concatenate_path(f'lin_decay_{peak_name}.png', peak_processed_data_path)
+    fig.savefig(save_path, bbox_inches='tight',dpi=600)
+    print(f'\ngraph of linearized decay of {peak_name} saved to {peak_processed_data_path}')
 
 
 
