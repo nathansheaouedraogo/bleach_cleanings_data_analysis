@@ -92,18 +92,26 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
     
     """
     Summary:
-        Linearizes decay and calculates regression. 
+        Linearizes decay and calculates fit. 
         Returns number of measurements in decay, slope, y_int, rsq, and linearized dataset
         Units are in terms of measurements per hour
         NOTE: rsq_decimals defaults to 4 decimal places. Change if wanted!   
     Args: 
         df_peak_processed (_dataframe_): background corrected dataframe of peak
-        time_resolution (_int_, _float_): time resolution of measurements
+        time_resolution (_numeric_): time resolution of measurements
         timescale (_str_): units of time resolution
+        rsq_decimals (_int_): defaulted to round rsq to 4 decimals
+    Returns: 
+        max(df_decay['minutes']) (_numeric_): length of decay in minutes
+        slope (_numeric_): slope of fit in units of [conc]/min (can be changed by modifying 'time_wrangling.scale_measurements()')
+        y_int (_numeric_): y-intercept of fit
+        round(rsq, rsq_decimals) (_numeric_): calculated r^2 of fit, rounded to 'rsq_decimals'
+        df_decay (_dataframe_): linearized decay data
+        
     """
     
     # filter dataframe to decay
-    df_decay = df_peak_processed.iloc[min(df_peak_processed.index):max(df_peak_processed.index+1)]
+    df_decay = df_peak_processed.iloc[df_peak_processed.index.min():df_peak_processed.index.max() + 1]
     df_decay.reset_index(inplace=True, drop=True)
     
     print(f'\n\n~~~Calculating Linearized Decay Params~~~')
@@ -115,7 +123,7 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
     # code below converts the index to appropriate timestamp in minutes
     # NOTE: code may be modified to change scale to units of per second or per hour
     df_decay['minutes'] = [scale_measurements(idx, time_resolution, timescale) for idx in df_decay.index]
-    print(f'          #measurements:    {max(df_decay.index)}')
+    print(f'           decay length:    {df_decay["minutes"].max()} minutes')
     
     # set x data, y data
     x_data = df_decay['minutes'].to_numpy().reshape(-1,1)
@@ -131,5 +139,5 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
     print(f'                  y_int:    {y_int}')
     print(f'                  r_sqr:    {rsq}')
     
-    return max(df_decay.index), slope, y_int, round(rsq, rsq_decimals), df_decay
+    return df_decay['minutes'].max(), slope, y_int, round(rsq, rsq_decimals), df_decay
 

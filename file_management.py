@@ -26,16 +26,18 @@ def create_dir(parent_dir_name, child_dir_name):
     parent_dir_path = concatenate_path(parent_dir_name, cwd())
     if child_dir_name in os.listdir(parent_dir_path):
         for i in range(len(os.listdir(parent_dir_path))):
-            if os.listdir(parent_dir_path)[i] == child_dir_name:
-                child_dir_name = f"{child_dir_name}_({i+2})"
-                if child_dir_name in os.listdir(parent_dir_path):
-                    continue
-                else:
-                    break
-    path = concatenate_path(child_dir_name, parent_dir_path)
-    os.mkdir(os.path.join(parent_dir_path, child_dir_name))
+            if f'{child_dir_name}_({i+2})' not in os.listdir(parent_dir_path):
+                dir_name = f'{child_dir_name}_({i+2})'
+                break
+            else:
+                continue
+    else:
+        dir_name = child_dir_name
+    path = concatenate_path(dir_name, parent_dir_path)
+    os.mkdir(path)
+    print(f'\nprocessed data dir initialized: \n{path}\n')
     return path
-
+    
 def select_raw_data():
     """
     Prompts user to select .csv file of raw data 
@@ -43,9 +45,9 @@ def select_raw_data():
     
     raw_data_dir = concatenate_path("raw_data")
     
-    title = f"Please select the raw data"
+    title = f"Please select a raw data file"
     
-    file = filedialog.askopenfilename(initialdir = raw_data_dir, filetypes=(("CSV Files", "*.csv"),), title=title)
+    file = filedialog.askopenfilename(initialdir = raw_data_dir, filetypes=[['.csv', '*.csv'], ['.dat', '*.dat'], ['Excel', '*.xlsx, *.xls'], ['.txt', '*.txt']], title=title)
     
     if not file:
         messagebox.showerror(None, "Fatal Error: \n\nNo raw data selected!")
@@ -105,7 +107,7 @@ def load_experimental_data_dict():
     
     title = f"Please select the filled dictionary of experimental times"
     
-    file = filedialog.askopenfilename(initialdir = experiment_data_dir_path, filetypes=(("JSON files", "*.json"),), title=title)
+    file = filedialog.askopenfilename(initialdir = experiment_data_dir_path, filetypes=(("JSON", "*.json"),), title=title)
     
     
     if not file:
@@ -115,15 +117,31 @@ def load_experimental_data_dict():
     else:
             try: 
                 with open(file, "r") as f:
-                    print(f)
                     json.load(f)
             except: 
-                messagebox.showerror(None, f"Fatal Error: \n\nSelected file improperly formatted!\n\nFile: {file}!")
-                print(f"\nprocess finished with exit code 1 (improperly formatted file):\n{file}")
+                messagebox.showerror(None, f"Fatal Error: \n\nSelected JSON improperly formatted!\n\nFile: {file}!\n")
+                print(f"\nprocess finished with exit code 1 (improperly formatted JSON):\n{file}\n")
                 exit() 
             else: 
                 with open(file) as f: 
-                    return json.load(f) #TODO: check for input validity
+                    
+                    # load dict
+                    dict = json.load(f) 
+                    
+                    # check for input validity
+                    for sub_dict in dict.keys():
+                        for key in dict[sub_dict].keys():
+                            if key not in ['condition', 'peak_start_datetime', 'peak_end_datetime', 'background_start_datetime', 'background_end_datetime']:
+                                messagebox.showerror(None, f"Fatal Error: \n\nSelected JSON improperly formatted!\n\nFile: {file}!\n")
+                                print(f"\nprocess finished with exit code 1 (improperly formatted JSON):\n{file}\n")
+                                exit() 
+                        for key_name in ['condition', 'peak_start_datetime', 'peak_end_datetime', 'background_start_datetime', 'background_end_datetime']:
+                            if key_name not in dict[sub_dict].keys():
+                                messagebox.showerror(None, f"Fatal Error: \n\nSelected JSON improperly formatted!\n\nFile: {file}\n!")
+                                print(f"\nprocess finished with exit code 1 (improperly formatted JSON):\n{file}\n")
+                                exit() 
+                    else:
+                        return dict
 
 def dump_dict(dict, file_name, parent_dir_path):
     """

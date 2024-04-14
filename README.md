@@ -56,7 +56,7 @@ For the program to run, you must define a .json file containing identification o
     >For experiments run on multiple days with non-unique file names: 
     >yyyy-mm-dd - yyyy-mm-dd (x).json (note: 'x' is just a unique integer identifier. replace as needed.)
 2. Load your plotly dataset, zoom in to the desired peak(s).
-3. Copy and paste the dictionary from the "COPY ME" heading into this file. Each nested dictionary should correspond to one dataset. Add or remove as nessecary. You may use the "data_dict()" class to modify further down the line as needed. 
+3. Copy and paste the dictionary from the "COPY ME" heading into this file. Each nested dictionary should correspond to one dataset. Add or remove as necessary. You may use the "data_dict()" class to modify further down the line as needed. 
 
 4. On the graph, take note of a range which is a good APPROXIMATION of the background and append the start to
 'background_start_datetime' and 'background_end_datetime' The values of the background are calculated as a mean.  
