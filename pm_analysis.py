@@ -4,27 +4,19 @@ import file_management as fm
 from tkinter import messagebox
 import plotting
 from process_peak import process_peak as process
-import matplotlib
 from processed_peak_class import data_dict
 pd.options.mode.chained_assignment = None  # default='warn', shuts up useless pd warnings 
 
-# update matplotlib paras to use stix font and tex notation
-matplotlib.rcParams['text.usetex'] = True
-matplotlib.rcParams['font.family'] = 'stixgeneral'
-matplotlib.rcParams['mathtext.fontset'] = 'stix'
-matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
 
-
-
-def pm_analysis(time_resolution, timescale, show_raw_peaks=True):
+def pm_analysis(time_resolution, timescale, show_raw_peaks):
     # if timescale.lower() not in ['seconds', 'minutes', 'hours']:
     # messagebox.showerror(message='Fatal Error: Invalid timescale!')
     # print(process finished with exit code 1 (invalid timescale))
     # exit()
     
     # load raw data 
-    raw_data_path = fm.select_raw_data()
-    
+    # raw_data_path = fm.select_raw_data()
+    raw_data_path = r'C:\Users\Nathan\OneDrive - University of Saskatchewan\HAVOC\bleach_lab_cleanings\raw_data\2 2024-01-31 - 2024-03-30 (example).csv'
     # prompt experiment_date
     # experiment_date = fm.input_date_of_experiment()
     experiment_date = '2024-03-28 - 2024-03-29'

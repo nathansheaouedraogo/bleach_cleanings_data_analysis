@@ -6,7 +6,6 @@ import lin_reg
 from time_wrangling import scale_measurements 
 
 
-
 def load_peak(experimental_dict, i, df_wide):
     
     """
@@ -36,7 +35,7 @@ def load_peak(experimental_dict, i, df_wide):
     print(f'~~~Loading Peak {i+1}~~~')
     print(f'\n            Condition:    {experimental_dict["condition"][i]}')
     print(f'\n      Peak Start Time:    {peak_start_time}')
-    print(f'\n      Peak Start Time:    {peak_end_time}')
+    print(f'\n        Peak End Time:    {peak_end_time}')
     print(f'\nBackground Start Time:    {background_start_time}')
     print(f'\n  Background End Time:    {background_end_time}')
     
@@ -94,10 +93,8 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
     
     """
     Summary:
-        Linearizes decay and calculates fit. 
-        Returns number of measurements in decay, slope, y_int, rsq, and linearized dataset
-        Units are in terms of measurements per hour
-        NOTE: rsq_decimals defaults to 4 decimal places. Change if wanted!   
+        Linearizes decay and calculates fit (including residuals)
+        RSQ is defaulted to 4 decimals, change if wanted    
     Args: 
         df_peak_processed (_dataframe_): background corrected dataframe of peak
         time_resolution (_numeric_): time resolution of measurements
@@ -113,7 +110,9 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
     """
     
     # filter dataframe to decay
-    df_decay = df_peak_processed.iloc[df_peak_processed.index.min():df_peak_processed.index.max() + 1]
+    peak_concentration = df_peak_processed['pm_conc'].max()
+    peak_concentration_index = df_peak_processed.index[df_peak_processed['pm_conc'] == peak_concentration][0]
+    df_decay = df_peak_processed.iloc[peak_concentration_index:df_peak_processed.index.max() + 1]
     df_decay.reset_index(inplace=True, drop=True)
     
     print(f'\n\n~~~Calculating Linearized Decay Params~~~')
@@ -141,5 +140,13 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
     print(f'                  y_int:    {y_int}')
     print(f'                  r_sqr:    {rsq}')
     
+    # calculate residuals
+    residuals = lin_reg.residuals(df_decay['ln_pm_conc'].to_list(), df_decay['best_fit'].to_list())
+    df_decay['residuals'] = residuals
+    
+    # reorder dataframe columns 
+    #! BE VIGILANT IN TYPING COLUMN TITLES! Misspelling column names will result in column of NaNs (and no flagged error!)
+    ordered_columns = ['datetime', 'minutes', 'pm_conc', 'ln_pm_conc', 'best_fit', 'residuals']
+    df_decay = df_decay.reindex(columns=ordered_columns)
     return df_decay['minutes'].max(), slope, y_int, round(rsq, rsq_decimals), df_decay
 

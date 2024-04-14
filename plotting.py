@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
@@ -29,28 +30,14 @@ def plot_lin_decay(df_decay, y_int, slope, rsq, sig_figs=4):
     
     fig, ax = plt.subplots(1, figsize=(8, 4))
     ax.scatter(df_decay['minutes'], df_decay['ln_pm_conc'], color='k')
-    ax.plot(df_decay['minutes'], df_decay['best_fit'], color='k--')
+    ax.plot(df_decay['minutes'], df_decay['best_fit'], 'k-')
     
-    # major locator (5mins)
-    xloc=md.MinuteLocator(interval = 5)
-    ax.xaxis.set_major_locator(xloc)
-    
-    # # minor locator (2.5mins)
-    # ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    # ax.tick_params(which='minor', length=5, width=1,)
-    
-    # auto-format
-    fig.autofmt_xdate()
-    
-    fig.autofmt_xdate(which='both')    # major formatter
-    majorFmt = md.DateFormatter('%H:%M')
-    ax.xaxis.set_major_formatter(majorFmt)
-    
+        
     # eqn
-    y_int_str = str(np.around(y_int, sig_figs)[0])
+    y_int_str = str(np.around(y_int, sig_figs))
     if y_int_str[0] != '-':
         y_int_str = '+' + y_int_str
-    slope_str = str(np.around(slope, sig_figs)[0]*-1) # NOTE: slope (tau) is shown as a positive value     
+    slope_str = str(round(slope, sig_figs)*-1) # NOTE: slope (tau) is shown as a positive value     
     r_sqr_str = str(rsq)
     
     # x-axis
@@ -73,33 +60,37 @@ def plot_lin_decay(df_decay, y_int, slope, rsq, sig_figs=4):
 def plot_peak(df_peak_processed):
     """
     Summary: 
-        Plots background corrected peak in 5 minute intervals
+        Plots background corrected peak
     """
     
+    # convert x data to datetime
+    datetime_data = pd.to_datetime(df_peak_processed['datetime']).to_list()
+    
     fig, ax = plt.subplots(1, figsize=(8, 4))
-    ax.plot(df_peak_processed['datetime'], df_peak_processed['pm_conc'], color='k')
+    ax.scatter(datetime_data, df_peak_processed['pm_conc'], color='k')
     
-    # major locator (5mins)
-    xloc=md.MinuteLocator(interval = 5)
-    ax.xaxis.set_major_locator(xloc)
-    
-    # minor locator (2.5mins)
-    # ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    # ax.tick_params(which='minor', length=5, width=1,)
-
-    # auto-format
-    fig.autofmt_xdate()
-
-    fig.autofmt_xdate(which='both')    # major formatter
-    majorFmt = md.DateFormatter('%H:%M')
-    ax.xaxis.set_major_formatter(majorFmt)
-    
+    # majorFmt = md.DateFormatter('%H:%M')
     # x-axis
-    x_axis_min = df_peak_processed['datetime'].iat[0]
-    x_axis_max = df_peak_processed['datetime'].iat[-1]
+    x_axis_min = datetime_data[0]
+    x_axis_max = datetime_data[-1]
     ax.set_xlim(x_axis_min, x_axis_max)
     ax.set_xlabel(r'\textbf{Time} (CST)')
     ax.tick_params(axis='x', bottom=True, top=True, direction='inout')
     
+    # y-axis
+    ax.tick_params(axis='y', left=True, right=True, direction='inout')
+    ax.set_ylabel(r'$\frac{\mu{g}}{m^3}$')
+    
+    #major locator (4 mins)
+    xloc = md.MinuteLocator(byminute=range(0,60), interval = 4)
+    ax.xaxis.set_major_locator(xloc)
+    
+    # minor locator (2mins)
+    ax.xaxis.set_minor_locator(AutoMinorLocator(2))    
+    
+    # # major formatter
+    majorFmt = md.DateFormatter('%H:%M')
+    fig.autofmt_xdate(which='both')    
+    ax.xaxis.set_major_formatter(majorFmt)
     
     return fig

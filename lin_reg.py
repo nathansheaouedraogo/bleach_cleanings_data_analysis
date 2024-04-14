@@ -56,3 +56,21 @@ def regression(x_data, y_data, rsq_decimals=4):
     # y_int = y_int_arr.astype(float)
     # RSQ = RSQ_arr.astype(float)
     return slope, y_int, RSQ
+
+def residuals(y_data, y_fit):
+    """
+    Summary: 
+        Function calculates the residuals between fit and data
+    Args:
+    
+        y_data (_array_): array like numerical data of  measured data
+        y_fit (_array_): array like numerical data of  calculated data
+    
+    Returns: 
+        residuals (_array_): list of residuals
+    """
+    
+    residuals = []
+    for i in range(len(y_data)):
+        residuals.append(y_data[i]-y_fit[i])
+    return residuals
