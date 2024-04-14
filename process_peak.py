@@ -31,6 +31,6 @@ def process_peak(experimental_dict, i, df_wide, time_resolution, timescale):
     peak_conc, peak_area = peak_ops.calculate_peak_area_and_conc(df_peak_processed)
     decay_length, slope, y_int, rsq, df_decay = peak_ops.calculate_decay(df_peak_processed, time_resolution, timescale)
     
-    output = (peak_area, peak_conc, slope, y_int, decay_length, rsq, df_peak_processed, df_decay)
+    output = (peak_area, peak_conc, slope, y_int, rsq, decay_length, df_peak_processed, df_decay)
     
     return output

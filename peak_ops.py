@@ -5,6 +5,8 @@ import integrate_peak
 import lin_reg
 from time_wrangling import scale_measurements 
 
+
+
 def load_peak(experimental_dict, i, df_wide):
     
     """
@@ -31,7 +33,7 @@ def load_peak(experimental_dict, i, df_wide):
     background_end_index =df_wide.index[df_wide['datetime'] == background_end_time][0]
     
     # output message 
-    print(f'\n\n~~~Loading experiment {i+1}~~~')
+    print(f'~~~Loading Peak {i+1}~~~')
     print(f'\n            Condition:    {experimental_dict["condition"][i]}')
     print(f'\n      Peak Start Time:    {peak_start_time}')
     print(f'\n      Peak Start Time:    {peak_end_time}')
@@ -46,7 +48,7 @@ def background(background_start_index, background_end_index, df_wide):
     Calculates background concentration
     """
     
-    print(f'\n\n~~~Calculating Background~~~')
+    print(f'\n~~~Calculating Background~~~')
     background = df_wide.iloc[background_start_index:background_end_index+1]['pm_conc'].mean()
     print(f'\n           Background:    {background}')
     return background
@@ -82,7 +84,7 @@ def calculate_peak_area_and_conc(df_peak_processed):
     peak_area = integrate_peak.integrate_peak(elapsed_time, df_peak_processed['pm_conc'].to_list())
     
     # output message
-    print(f'\n\n~~~Calculating Peak Area\Conc.~~~')
+    print(f'\n~~~Calculating Peak Area\Conc.~~~')
     print(f'\n            Peak Area:    {peak_area}')
     print(f'\n            Peak Conc:    {peak_conc}')
     

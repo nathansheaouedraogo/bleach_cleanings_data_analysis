@@ -1,5 +1,4 @@
 import numpy as np
-from tkinter import messagebox, simpledialog
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
@@ -30,7 +29,22 @@ def plot_lin_decay(df_decay, y_int, slope, rsq, sig_figs=4):
     
     fig, ax = plt.subplots(1, figsize=(8, 4))
     ax.scatter(df_decay['minutes'], df_decay['ln_pm_conc'], color='k')
-    ax.line(df_decay['minutes'], df_decay['best_fit'], color='k--')
+    ax.plot(df_decay['minutes'], df_decay['best_fit'], color='k--')
+    
+    # major locator (5mins)
+    xloc=md.MinuteLocator(interval = 5)
+    ax.xaxis.set_major_locator(xloc)
+    
+    # # minor locator (2.5mins)
+    # ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+    # ax.tick_params(which='minor', length=5, width=1,)
+    
+    # auto-format
+    fig.autofmt_xdate()
+    
+    fig.autofmt_xdate(which='both')    # major formatter
+    majorFmt = md.DateFormatter('%H:%M')
+    ax.xaxis.set_major_formatter(majorFmt)
     
     # eqn
     y_int_str = str(np.around(y_int, sig_figs)[0])
@@ -63,7 +77,22 @@ def plot_peak(df_peak_processed):
     """
     
     fig, ax = plt.subplots(1, figsize=(8, 4))
-    ax.line(df_peak_processed['datetime'])
+    ax.plot(df_peak_processed['datetime'], df_peak_processed['pm_conc'], color='k')
+    
+    # major locator (5mins)
+    xloc=md.MinuteLocator(interval = 5)
+    ax.xaxis.set_major_locator(xloc)
+    
+    # minor locator (2.5mins)
+    # ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+    # ax.tick_params(which='minor', length=5, width=1,)
+
+    # auto-format
+    fig.autofmt_xdate()
+
+    fig.autofmt_xdate(which='both')    # major formatter
+    majorFmt = md.DateFormatter('%H:%M')
+    ax.xaxis.set_major_formatter(majorFmt)
     
     # x-axis
     x_axis_min = df_peak_processed['datetime'].iat[0]
@@ -72,21 +101,5 @@ def plot_peak(df_peak_processed):
     ax.set_xlabel(r'\textbf{Time} (CST)')
     ax.tick_params(axis='x', bottom=True, top=True, direction='inout')
     
-        # major locator (1hr)
-    xloc=md.MinuteLocator(interval = 5)
-    ax.xaxis.set_major_locator(xloc)
-
-    # major formatter
-    majorFmt = md.DateFormatter('%H:%M')
-    ax.xaxis.set_major_formatter(majorFmt)
-
-    # minor locator (15mins)
-    ax.xaxis.set_minor_locator(AutoMinorLocator())
-    ax.tick_params(which='minor', length=5, width=1,)
-
-    # auto-format
-    fig.autofmt_xdate()
-
-    fig.autofmt_xdate(which='both')
     
     return fig

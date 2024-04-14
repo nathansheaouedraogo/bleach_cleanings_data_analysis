@@ -6,6 +6,7 @@ import plotting
 from process_peak import process_peak as process
 import matplotlib
 from processed_peak_class import data_dict
+pd.options.mode.chained_assignment = None  # default='warn', shuts up useless pd warnings 
 
 # update matplotlib paras to use stix font and tex notation
 matplotlib.rcParams['text.usetex'] = True
@@ -68,7 +69,7 @@ def pm_analysis(time_resolution, timescale, show_raw_peaks=True):
             ## analyze dataset ##
             
             # process peak please see "process_peak.process_peak()" docstring for information 
-            processed_peak = process(experimental_data_dict, i, df_wide, time_resolution, timescale)
+            processed_peak = process(experimental_data_dict[dict_name], i, df_wide, time_resolution, timescale)
             
             # initialize resolved_peaks_dict
             resolved_peaks_dict.add_to(dict_name)
@@ -90,35 +91,35 @@ def pm_analysis(time_resolution, timescale, show_raw_peaks=True):
                 continue
             
             # initialize dir for peak data
-            peak_name = f"{dict_name}_{dict_name['condition'][i]}_{i+1}"
-            peak_dir = fm.create_dir(processed_data_path, peak_name)
+            peak_name = f"{dict_name}_{experimental_data_dict[dict_name]['condition'][i]}_{i+1}"
+            peak_dir_path = fm.create_dir(processed_data_path, peak_name)
             
             # dump peak dictionary
-            # TODO: might not work! supposed to get index and dump to folder
-            resolved_peaks_dict.at_index(i, dict_name).dump_json(peak_name, peak_dir)
-            print(f"\nanalysis of {peak_name} saved to {peak_dir}")
+            peak_dict = resolved_peaks_dict.at_index(i, dict_name)
+            fm.dump_dict(peak_dict, peak_name, peak_dir_path)
+            print(f"\nanalysis of {peak_name} saved to {peak_dir_path}")
             
             # save non-linearized peak data
-            save_path = fm.concatenate_path(f"{peak_name}_peak.csv", peak_dir)
+            save_path = fm.concatenate_path(f"{peak_name}_peak.csv", peak_dir_path)
             processed_peak[6].to_csv(save_path, index=False)
-            print(f"\ncsv of {peak_name} data saved to {peak_dir}")
+            print(f"\ncsv of {peak_name} data saved to {peak_dir_path}")
             
             # save plot of non-linearized peak data
             exp_fig = plotting.plot_peak(processed_peak[6])
-            save_path = fm.concatenate_path(f"{peak_name}_peak.png", peak_dir)
+            save_path = fm.concatenate_path(f"{peak_name}_peak.png", peak_dir_path)
             exp_fig.savefig(save_path, bbox_inches='tight', dpi=600)
-            print(f"\ngraph of {peak_name} saved to {peak_dir}")
+            print(f"\ngraph of {peak_name} saved to {peak_dir_path}")
             
             # save linearized decay data
-            save_path = fm.concatenate_path(f"{peak_name}_lin_decay.csv", peak_dir)
+            save_path = fm.concatenate_path(f"{peak_name}_lin_decay.csv", peak_dir_path)
             processed_peak[7].to_csv(save_path, index=False)
-            print(f"\ncsv of linearized {peak_name} decay data saved to {peak_dir}")
+            print(f"\ncsv of linearized {peak_name} decay data saved to {peak_dir_path}")
             
             # save plot of linearized decay
             lin_fig = plotting.plot_lin_decay(processed_peak[7], processed_peak[3], processed_peak[2], processed_peak[4])
-            save_path = fm.concatenate_path(f"{peak_name}_lin_decay.png", peak_dir)
+            save_path = fm.concatenate_path(f"{peak_name}_lin_decay.png", peak_dir_path)
             lin_fig.savefig(save_path, bbox_inches="tight",dpi=600)
-            print(f"\ngraph of linearized decay of {peak_name} saved to {peak_dir}")
+            print(f"\ngraph of linearized decay of {peak_name} saved to {peak_dir_path}")
             
     # save analysis of ENTIRE dataset
     resolved_peaks_dict.dump_dict(f'pm_analysis', processed_data_path)

@@ -35,7 +35,7 @@ def create_dir(parent_dir_name, child_dir_name):
         dir_name = child_dir_name
     path = concatenate_path(dir_name, parent_dir_path)
     os.mkdir(path)
-    print(f'\nprocessed data dir initialized: \n{path}\n')
+    print(f'\n{dir_name} dir initialized at: \n{path}\n')
     return path
     
 def select_raw_data():

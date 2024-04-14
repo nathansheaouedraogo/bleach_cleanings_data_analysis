@@ -32,25 +32,23 @@ class data_dict():
         """
         return self.dict
     
-    def at_index(self, idx, key):
+    def at_index(self, idx, dict_name):
         """
-        Returns dictionary at specific index
+        Returns dictionary at specific index of nested dict
         
         Args:
             idx (_int_): index 
-            key (_str_): key
+            dict_name (_any_): name of sub_dict
         """
         
         dict = {
-                key : {
-                    "condition" : self.dict["condition"][idx],
-                    "peak_area" : self.dict["peak_area"][idx],
-                    "peak_concentration" : self.dict["peak_concentration"][idx],
-                    "negative_decay_constant" : self.dict["negative_decay_const"][idx],
-                    "decay_y_int" : self.dict["decay_y_int"][idx],
-                    "decay_rsq" : self.dict["decay_RSQ"][idx],
-                    "decay_length_minutes": self.dict["decay_length_minutes"][idx]
-                }
+                "condition" : self.dict[dict_name]["condition"][idx],
+                "peak_area" : self.dict[dict_name]["peak_area"][idx],
+                "peak_concentration" : self.dict[dict_name]["peak_concentration"][idx],
+                "negative_decay_constant" : self.dict[dict_name]["negative_decay_constant"][idx],
+                "decay_y_int" : self.dict[dict_name]["decay_y_int"][idx],
+                "decay_rsq" : self.dict[dict_name]["decay_rsq"][idx],
+                "decay_length_minutes": self.dict[dict_name]["decay_length_minutes"][idx]
             }
         return dict
     
@@ -82,7 +80,7 @@ class data_dict():
             dict_name (_any_): name of sub dictionary
             data (_any_): data to be appended
         """
-        self.dict[dict_name]['append_peak_area'].append(data)
+        self.dict[dict_name]['peak_area'].append(data)
     
     def append_peak_concentration(self, dict_name, data):
         """
@@ -134,13 +132,17 @@ class data_dict():
         Returns True if length of keys in sub dicts are
         not identical. Returns None if valid.
         """
-        for dict in self.dict.return_dicts():
+        for dict in self.dict.keys():
             is_valid = (
-                len(dict['condition']) == len(dict['peak_area'])
-                == len(dict['peak_concentration']) == len(dict['negative_decay_constant'])
-                == len(dict['decay_y_int']) == len(dict['decay_rsq'])
-                == len(dict['decay_length_minutes']) == len(dict['decay_length_minutes'])
-            )
+                len(self.dict[dict]['condition']) 
+                == len(self.dict[dict]['peak_area'])
+                == len(self.dict[dict]['peak_concentration']) 
+                == len(self.dict[dict]['negative_decay_constant'])
+                == len(self.dict[dict]['decay_y_int']) 
+                == len(self.dict[dict]['decay_rsq'])
+                == len(self.dict[dict]['decay_length_minutes']) 
+                == len(self.dict[dict]['decay_length_minutes'])
+                )
             if not is_valid:
                 return True 
     

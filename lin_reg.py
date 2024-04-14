@@ -31,7 +31,7 @@ def linearized(y_data, peak=None):
     
     
     # apply log normalization 
-    ln_y_data = [np.log(conc_i/peak_conc).astype(np.float) for conc_i in y_data]    
+    ln_y_data = [np.log(conc_i/peak_conc).astype(float) for conc_i in y_data]    
     return ln_y_data
 
 def regression(x_data, y_data, rsq_decimals=4):
@@ -51,8 +51,8 @@ def regression(x_data, y_data, rsq_decimals=4):
     
     # apply linear regression 
     lin_reg = lm().fit(x_data, y_data)
-    slope_arr, y_int_arr, RSQ_arr = lin_reg.coef_[0], lin_reg.intercept_, round(lin_reg.score(x_data, y_data), rsq_decimals)
-    slope = slope_arr.astype(np.float)
-    y_int = y_int_arr.astype(np.float)
-    RSQ = RSQ_arr.astype(np.float)
+    slope, y_int, RSQ = lin_reg.coef_[0][0], lin_reg.intercept_[0], round(lin_reg.score(x_data, y_data), rsq_decimals)
+    # slope = slope_arr.astype(float)
+    # y_int = y_int_arr.astype(float)
+    # RSQ = RSQ_arr.astype(float)
     return slope, y_int, RSQ
