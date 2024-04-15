@@ -9,17 +9,41 @@ pd.options.mode.chained_assignment = None  # default='warn', shuts up useless pd
 
 
 def pm_analysis(time_resolution, timescale, show_raw_peaks):
-    # if timescale.lower() not in ['seconds', 'minutes', 'hours']:
-    # messagebox.showerror(message='Fatal Error: Invalid timescale!')
-    # print(process finished with exit code 1 (invalid timescale))
-    # exit()
+    
+    """
+    Summary:
+        Function analyzes pm peaks inputted by the user and saves analysis to "processed_peaks" directory. 
+        Please see "README.md" before running this function.
+    Arguments: 
+        time_resolution (_int_, _float_): time resolution of measurements
+        timescale (_str_): 'seconds', 'minutes', or 'hours'; unit of time resolution 
+        show_raw_peaks(_bool_): set to true if wanting to view interactive plot of dataset
+    """
+    
+    
+    # test input validity
+    if not isinstance(time_resolution, int):
+        if not isinstance(time_resolution, float):
+            messagebox.showerror(message='Fatal Error: Invalid time resolution!\n')
+            print('\nprocess finished with exit code 1 (invalid time resolution)\n')
+            exit()
+    if timescale.lower() not in ['seconds', 'minutes', 'hours']:
+        messagebox.showerror(message='Fatal Error: Invalid timescale!\n')
+        print('\nprocess finished with exit code 1 (invalid timescale)\n')
+        exit()
+    if not isinstance(show_raw_peaks, bool):
+        messagebox.showerror(message='Fatal Error: Invalid input to show raw peaks!\n')
+        print('\nprocess finished with exit code 1 (invalid input to show raw peaks)\n')
+        exit()
     
     # load raw data 
-    # raw_data_path = fm.select_raw_data()
-    raw_data_path = r'C:\Users\Nathan\OneDrive - University of Saskatchewan\HAVOC\bleach_lab_cleanings\raw_data\2 2024-01-31 - 2024-03-30 (example).csv'
+    raw_data_path = fm.select_raw_data()
+    
     # prompt experiment_date
-    # experiment_date = fm.input_date_of_experiment()
-    experiment_date = '2024-03-28 - 2024-03-29'
+    experiment_date = fm.input_date_of_experiment()
+    
+    # experiment_date = '2024-03-28 - 2024-03-29'
+    
     # create dirs in 'processed_data', return path
     processed_data_path = fm.create_dir(f'processed_data', experiment_date)
     
@@ -56,6 +80,9 @@ def pm_analysis(time_resolution, timescale, show_raw_peaks):
     
     for dict_name in experimental_data_dict.keys():        
         
+        # initialize resolved_peaks_dict
+        resolved_peaks_dict.add_to(dict_name)
+        
         for i in range(len(experimental_data_dict[dict_name]['condition'])):
             
             ## analyze dataset ##
@@ -63,8 +90,6 @@ def pm_analysis(time_resolution, timescale, show_raw_peaks):
             # process peak please see "process_peak.process_peak()" docstring for information 
             processed_peak = process(experimental_data_dict[dict_name], i, df_wide, time_resolution, timescale)
             
-            # initialize resolved_peaks_dict
-            resolved_peaks_dict.add_to(dict_name)
             
             # fill resolved_peaks_dict
             resolved_peaks_dict.append_condition(dict_name, experimental_data_dict[dict_name]['condition'][i])
@@ -114,6 +139,8 @@ def pm_analysis(time_resolution, timescale, show_raw_peaks):
             print(f"\ngraph of linearized decay of {peak_name} saved to {peak_dir_path}")
             
     # save analysis of ENTIRE dataset
-    resolved_peaks_dict.dump_dict(f'pm_analysis', processed_data_path)
-    messagebox.showinfo(f'analysis saved to: \n{processed_data_path}\n')
+    resolved_peaks_dict.dump_json(f'analysis', processed_data_path)
+    message = f'\nanalysis saved to: \n\n{processed_data_path}\n'
+    print(message)
     print(f'\nprocess finished with exit code 0\n\n')
+    exit() #TODO dk why the analysis runs after finishing...

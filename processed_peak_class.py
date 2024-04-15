@@ -6,11 +6,13 @@
 from file_management import dump_dict as dump
 
 class data_dict():
+    
     def __init__ (self):
         """
         Initializes empty dictionary 
         """
         self.dict = {}
+    
     def add_to(self, dict_name):
         """
         Adds empty nested dictionary with name 'dict_name'
