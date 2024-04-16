@@ -2,7 +2,7 @@
 
 import peak_ops
 
-def process_peak(experimental_dict, i, df_wide, time_resolution, timescale, log_file=None):
+def process_peak(experimental_dict, i, df_wide, time_resolution, timescale, log_file=None, peak=None, ):
     """
     Resolves inputted peak based on values from experimental_dict. 
     Outputs all operations and calculations done on peak. 
@@ -13,7 +13,8 @@ def process_peak(experimental_dict, i, df_wide, time_resolution, timescale, log_
         df_wide (_dataframe_): dataframe of experiment
         time_resolution (_float_): #measurements/timescale
         timescale (_str_): 'seconds', 'minutes', 'hours'
-        log (_list_, opt): log file from file_management.track_log(). Defaulted to none.
+        log_file (_list_, opt): log file from file_management.track_log(). Defaulted to none.\\
+        peak (_int_, _float_, opt): user defined peak concentration. If set to none (default) will use first value in df_peak_processed['pm_conc']
     Returns:
         output (_tuple_):
             >>> peak_area (_float_): area of peak based on start/end times (output[0])
@@ -90,7 +91,7 @@ def process_peak(experimental_dict, i, df_wide, time_resolution, timescale, log_
     if log_file: 
         log_file.add_line(message_11)
     print(message_11)
-    decay_length, slope, y_int, rsq, df_decay = peak_ops.calculate_decay(df_peak_processed, time_resolution, timescale)
+    decay_length, slope, y_int, rsq, df_decay = peak_ops.calculate_decay(df_peak_processed, time_resolution, timescale, peak, log_file)
     message_12 = f'           decay length:    {df_decay["minutes"].max()} minutes'
     if log_file: 
         log_file.add_line(message_12)
