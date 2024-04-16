@@ -56,9 +56,6 @@ def pm_analysis(time_resolution, timescale, show_raw_peaks):
     # load raw data 
     raw_data_path = fm.select_raw_data(log, processed_data_path)
     
-    
-    # experiment_date = '2024-03-28 - 2024-03-29'
-    
     # load df
     df_wide = pd.read_csv(raw_data_path)
     df_wide = df_wide[['Timestamp', 'PM Estimate']]
