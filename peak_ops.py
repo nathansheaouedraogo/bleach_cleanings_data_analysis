@@ -2,15 +2,16 @@
 ## does all the heavy lifting. decided to move it outside of process_peak module 
 ## lin_reg and integrate_peak modules moved here as well to clean up code
 
+from tkinter import messagebox
 from time_wrangling import scale_measurements 
 import numpy as np
 from sklearn.linear_model import LinearRegression as lm 
 
-def linearized(y_data, peak=None, log_file=None):
+def linearized(y_data, log_file=None):
     
     """
     Summary: 
-        Function will linearize inputted data      
+        Function will linearize inputted data. Max decay value is set as the first index in 'y_data' array.   
         
         Normalization of Data: 
             lin_y_data = ln(y_data[i]/max(y_data))
@@ -18,7 +19,6 @@ def linearized(y_data, peak=None, log_file=None):
         !WARNING!: any value after background correction less than zero is set to 0 automatically
     Args:
         >>> y_data (_array_): array like numerical data to be linearized 
-        >>> peak (_int_, _float_, opt): user defined the peak concentration. If set to none, will pick first index.
         >>> log_file (_list_, opt): log file from fm.track_log() class. defaulted to None.
     Returns: 
         >>> lin_y_data (_array_): normalized y_data
@@ -30,15 +30,10 @@ def linearized(y_data, peak=None, log_file=None):
             message_1 = f'\nWARNING: invalid value {val} at index {y_data.index(val)}, replacing with 0'
             if log_file: 
                 log_file.add_line(message_1)
-            print(message)
+            print(message_1)
 
-    # if user selected peak exisits, set as peak. else, select first index in list. 
-    if peak: 
-        peak_conc = peak
-    else: 
-        peak_conc = y_data[0]
-    
-    
+    peak_conc = y_data[0]
+        
     # apply log normalization 
     ln_y_data = [np.log(conc_i/peak_conc).astype(float) for conc_i in y_data]    
     return ln_y_data
@@ -204,10 +199,10 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
         time_resolution (_numeric_): time resolution of measurements
         timescale (_str_): units of time resolution
         rsq_decimals (_int_): defaulted to round rsq to 4 decimals
-        peak (_int_, _float_, opt): If set to none (default) will use first value in df_peak_processed['pm_conc']
+        peak (_int_, _float_, opt): If set to none (default) will use maximum value found in df_peak_processed['pm_conc']
         log_file (_list_, opt): log file from fm.track_log() class. defaulted to None.
     Returns: 
-        max(df_decay['minutes']) (_numeric_): length of decay in minutes
+        df_decay['minutes'].max() (_numeric_): length of decay in minutes
         slope (_numeric_): slope of fit in units of [conc]/min (can be changed by modifying 'time_wrangling.scale_measurements()')
         y_int (_numeric_): y-intercept of fit
         round(rsq, rsq_decimals) (_numeric_): calculated r^2 of fit, rounded to 'rsq_decimals'
@@ -215,7 +210,22 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
     """
     
     # filter dataframe to decay
-    peak_concentration = df_peak_processed['pm_conc'].max()
+    
+    ## if peak=None, will use maximum value in df_peak_processed['pm_conc']
+    if not peak: # set peak to maximum value if not defined
+        peak_concentration = df_peak_processed['pm_conc'].max()
+    
+    ## if peak=x, will search for 'x' and filter df_peak_processed starting from that value
+    ## if x not found in df_peak_processed['pm_conc'], will default to maximum value in df_peak_processed['pm_conc']
+    else: 
+        peak_concentration = peak 
+        if peak_concentration not in df_peak_processed['pm_conc'].values: # check if value is in df
+            message_2 = f'\nuser inputted peak ({peak}) not found in dataframe; defaulting to maximum value ({df_peak_processed['pm_conc'].max()})'
+            if log_file:    
+                log_file.add_line(message_2)
+            print(message_2)
+            peak_concentration = df_peak_processed['pm_conc'].max()
+    
     peak_concentration_index = df_peak_processed.index[df_peak_processed['pm_conc'] == peak_concentration][0]
     df_decay = df_peak_processed.iloc[peak_concentration_index:df_peak_processed.index.max() + 1]
     df_decay.reset_index(inplace=True, drop=True)
