@@ -1,7 +1,8 @@
 def scale_measurements(input, time_resolution, timescale, decimals=None, convert=True):
     """
     Summary:
-        Scales evenly spaced timeseries data from unitless indices to minutes. 
+        Scales evenly spaced sequential integer index (0,n-1) to minutes. 
+        Each index represents one evenly spaced measurement taken by the instrument.  
         
     Args:
         input (_int_, _float_): input to be converted 
@@ -11,7 +12,7 @@ def scale_measurements(input, time_resolution, timescale, decimals=None, convert
         convert (bool, optional): If set to false will NOT convert. Defaults to True (recommended)
         
     Returns:
-        output: converted input to units of per hour
+        output: converted sequential integer index (0,n-1) to minutes. 
     """
     if not convert: 
         return input 
