@@ -1,5 +1,5 @@
 # General Overview
-This package is designed to analyze data from the Ambilabs 2Win integrating nephelometer. It is highly customizable, and with a few modifications all functions maybe used independently for other applications. As it stands, the intended use is to quickly analyze all peaks in a given dataset and report back important information organized in a simple and easy to follow manner. 
+This library is designed to analyze data from the Ambilabs 2Win integrating nephelometer. It is highly customizable, and with a few modifications all functions maybe used independently for other applications. As it stands, the intended use is to quickly analyze all peaks in a given dataset and report back important information organized in a simple and easy to follow manner. 
 
 The functions and classes may also be used as a simple "first step" in data processing with heavier analysis used down the line or may be implemented in prexisting workflows. 
 
