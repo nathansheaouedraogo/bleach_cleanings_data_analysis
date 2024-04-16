@@ -26,7 +26,7 @@ def linearized(y_data, peak=None, log_file=None):
     
     # user warnings
     for val in y_data: 
-        if val <= 0: 
+        if val < 0: 
             message_1 = f'\nWARNING: invalid value {val} at index {y_data.index(val)}, replacing with 0'
             if log_file: 
                 log_file.add_line(message_1)
