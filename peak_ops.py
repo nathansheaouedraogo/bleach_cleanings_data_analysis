@@ -204,14 +204,14 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
         time_resolution (_numeric_): time resolution of measurements
         timescale (_str_): units of time resolution
         rsq_decimals (_int_): defaulted to round rsq to 4 decimals
+        peak (_int_, _float_, opt): user defined the peak concentration. If set to none, will pick first index.
+        log_file (_list_, opt): log file from fm.track_log() class. defaulted to None.
     Returns: 
         max(df_decay['minutes']) (_numeric_): length of decay in minutes
         slope (_numeric_): slope of fit in units of [conc]/min (can be changed by modifying 'time_wrangling.scale_measurements()')
         y_int (_numeric_): y-intercept of fit
         round(rsq, rsq_decimals) (_numeric_): calculated r^2 of fit, rounded to 'rsq_decimals'
         df_decay (_dataframe_): linearized decay data
-        peak (_int_, _float_, opt): user defined the peak concentration. If set to none, will pick first index.
-        log_file (_list_, opt): log file from fm.track_log() class. defaulted to None.
     """
     
     # filter dataframe to decay
