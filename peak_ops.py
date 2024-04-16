@@ -204,7 +204,7 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
         time_resolution (_numeric_): time resolution of measurements
         timescale (_str_): units of time resolution
         rsq_decimals (_int_): defaulted to round rsq to 4 decimals
-        peak (_int_, _float_, opt): user defined the peak concentration. If set to none, will pick first index.
+        peak (_int_, _float_, opt): If set to none (default) will use first value in df_peak_processed['pm_conc']
         log_file (_list_, opt): log file from fm.track_log() class. defaulted to None.
     Returns: 
         max(df_decay['minutes']) (_numeric_): length of decay in minutes
