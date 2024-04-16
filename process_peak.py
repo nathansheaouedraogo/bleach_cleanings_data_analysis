@@ -2,7 +2,7 @@
 
 import peak_ops
 
-def process_peak(experimental_dict, i, df_wide, time_resolution, timescale, log_file=None, peak=None, ):
+def process_peak(experimental_dict, i, df_wide, time_resolution, timescale, log_file=None, peak=None):
     """
     Resolves inputted peak based on values from experimental_dict. 
     Outputs all operations and calculations done on peak. 
