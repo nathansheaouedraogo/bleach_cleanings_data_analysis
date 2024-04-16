@@ -3,6 +3,26 @@ from tkinter import filedialog, messagebox, simpledialog
 import os
 from pathlib import Path
 from datetime import date
+from datetime import datetime as dt
+
+class track_log():
+    """
+    Tracks log 
+    """
+    
+    def __init__(self):
+        """
+        Initializes log. Run at beginning of script execution.
+        """
+        self.lines =  [f'log init\t@: ({dt.now()}, {dt.now().astimezone().tzinfo})\n']
+    
+    def add_line(self, line):
+        self.lines.append(f'{line.rstrip()}\t@: ({dt.now()}, {dt.now().astimezone().tzinfo})\n')
+    
+    def output(self, processed_data_dir):
+        with open(concatenate_path('output.log', processed_data_dir), 'w') as f:
+            for line in self.lines:
+                f.write(line)
 
 def cwd():
     """
@@ -17,7 +37,7 @@ def concatenate_path(child_dir_name, parent_dir_path=cwd()):
     """
     return os.path.join(parent_dir_path, child_dir_name)
 
-def create_dir(parent_dir_name, child_dir_name):
+def create_dir(parent_dir_name, child_dir_name, track_log):
     """
     creates a child inside parent dir which itself is in the cwd
     """
@@ -35,10 +55,12 @@ def create_dir(parent_dir_name, child_dir_name):
         dir_name = child_dir_name
     path = concatenate_path(dir_name, parent_dir_path)
     os.mkdir(path)
-    print(f'\n{dir_name} dir initialized at: \n{path}\n')
+    message = f'\n{dir_name} dir initialized at: \n{path}\n'
+    print(message)
+    track_log.add_line(message)
     return path
     
-def select_raw_data():
+def select_raw_data(track_log, processed_data_path):
     """
     Prompts user to select .csv file of raw data 
     """
@@ -51,12 +73,15 @@ def select_raw_data():
     
     if not file:
         messagebox.showerror(None, "Fatal Error: \n\nNo raw data selected!")
-        print(f"\nprocess finished with exit code 1 (no raw data selected)\n")
+        message = f"\nprocess finished with exit code 1 (no raw data selected)\n"
+        print(message)
+        track_log.add_line(message)
+        track_log.output(processed_data_path)
         exit()
     else:
         return file    
 
-def load_experimental_data_dict():
+def load_experimental_data_dict(track_log, processed_data_dir):
     """
     Prompts user to select .json file of experimental start/end times
     NOTE: loaded file must be formatted in the following way: 
@@ -103,6 +128,7 @@ def load_experimental_data_dict():
         }
     """
     
+    
     experiment_data_dir_path = concatenate_path("experimental_times_dicts")
     
     title = f"Please select the filled dictionary of experimental times"
@@ -112,7 +138,10 @@ def load_experimental_data_dict():
     
     if not file:
         messagebox.showerror(None, f"Fatal Error: \n\nNo dictionary selected!")
-        print(f"\nprocess finished with exit code 1 (no dictionary selected)\n")
+        message = f"\nprocess finished with exit code 1 (no dictionary selected)\n"
+        print(message)
+        track_log.add_line(message)
+        track_log.output(processed_data_dir)
         exit() 
     else:
             try: 
@@ -120,7 +149,10 @@ def load_experimental_data_dict():
                     json.load(f)
             except: 
                 messagebox.showerror(None, f"Fatal Error: \n\nSelected JSON improperly formatted!\n\nFile: {file}!\n")
-                print(f"\nprocess finished with exit code 1 (improperly formatted JSON):\n{file}\n")
+                message = f"\nprocess finished with exit code 1 (improperly formatted JSON):\n{file}\n"
+                print(message)
+                track_log.add_line(message)
+                track_log.output(processed_data_dir)
                 exit() 
             else: 
                 with open(file) as f: 
@@ -133,13 +165,17 @@ def load_experimental_data_dict():
                         for key in dict[sub_dict].keys():
                             if key not in ['condition', 'peak_start_datetime', 'peak_end_datetime', 'background_start_datetime', 'background_end_datetime']:
                                 messagebox.showerror(None, f"Fatal Error: \n\nSelected JSON improperly formatted!\n\nFile: {file}!\n")
-                                print(f"\nprocess finished with exit code 1 (improperly formatted JSON):\n{file}\n")
-                                exit() 
+                                message = f"\nprocess finished with exit code 1 (improperly formatted JSON):\n{file}\n"
+                                print(message)
+                                track_log.add_line(message)
+                                track_log.output(processed_data_dir)
                         for key_name in ['condition', 'peak_start_datetime', 'peak_end_datetime', 'background_start_datetime', 'background_end_datetime']:
                             if key_name not in dict[sub_dict].keys():
-                                messagebox.showerror(None, f"Fatal Error: \n\nSelected JSON improperly formatted!\n\nFile: {file}\n!")
-                                print(f"\nprocess finished with exit code 1 (improperly formatted JSON):\n{file}\n")
-                                exit() 
+                                messagebox.showerror(None, f"Fatal Error: \n\nSelected JSON improperly formatted!\n\nFile: {file}!\n")
+                                message = f"\nprocess finished with exit code 1 (improperly formatted JSON):\n{file}\n"
+                                print(message)
+                                track_log.add_line(message)
+                                track_log.output(processed_data_dir)
                     else:
                         return dict
 
@@ -152,7 +188,7 @@ def dump_dict(dict, file_name, parent_dir_path):
         json.dump(dict, f, indent=4) 
 
 
-def input_date_of_experiment():
+def input_date_of_experiment(track_log, processed_data_path):
     """ 
     Function prompts user to input date of experiment(s). 
     """
@@ -168,8 +204,11 @@ def input_date_of_experiment():
         result = messagebox.askyesnocancel(title=None, message=message)
         
         if result is None: 
-            messagebox.showerror(None, "Fatal Error: \n\nNo no date inputted!\n")
-            print(f"\nprocess finished with exit code 1 (no date inputted)\n")
+            messagebox.showerror(None, "Fatal Error: \n\nNo date inputted!\n")
+            message = f"\nprocess finished with exit code 1 (no date inputted)\n"
+            print(message)
+            track_log.add_line(message)
+            track_log.output(processed_data_path)
             exit()        
         
         # experiments performed on single day
@@ -182,7 +221,10 @@ def input_date_of_experiment():
                 date.fromisoformat(experiment_date)
             except ValueError():
                 messagebox.showerror(None, "Fatal Error: \n\nImproper date format!\n")
-                print(f"\nprocess finished with exit code 1 (improper date format: {experiment_date})\n")
+                message = f"\nprocess finished with exit code 1 (improper date format: {experiment_date})\n"
+                track_log.add_line(message)
+                track_log.output(processed_data_path)
+                print(message)
                 exit()
             else: 
                 
@@ -198,7 +240,10 @@ def input_date_of_experiment():
                     continue 
                 else: 
                     messagebox.showerror(None, "Fatal Error: \n\nNo date inputted!\n")
-                    print(f"\nprocess finished with exit code 1 (no date inputted)\n")
+                    message = f"\nprocess finished with exit code 1 (no date inputted)\n"
+                    track_log.add_line(message)
+                    track_log.output(processed_data_path)
+                    print(message)
                     exit()
             
         # experiments performed on multiple days
@@ -214,6 +259,8 @@ def input_date_of_experiment():
             except:
                 messagebox.showerror(None, "Fatal Error: \n\nImproper date format!\n")
                 print(f"\nprocess finished with exit code 1 (improper date format: '{date_1} - {date_2}')\n")
+                
+                
                 exit()
             else: 
                 try: 
