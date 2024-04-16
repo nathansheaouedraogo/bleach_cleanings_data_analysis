@@ -3,7 +3,7 @@ This library is designed to analyze data from the Ambilabs 2Win integrating neph
 The functions and classes may also be used as a simple "first step" in data processing with heavier analysis used down the line or may be implemented in prexisting workflows.
 
 # Setup and General Use
-Please copy all files and folders from this rep onto your local disk. Create a folder named "processed_data" in the same location as the files you copied. Files with "example" may be deleted. Locate your raw data file and transfer it into the "raw data" folder. Next, please take note of your instruments timescale and time resolution (see: "Some Notes on Time Resolution heading) and input them into the "pm_analysis" function in "__RUN_ANALYSIS__".py file. If you need to define your peak/background times or would like to view the dataset, please set "show_raw_peaks=True". Else, set it to False. Setting to true will open an interactive plot of your dataset. Setting the argument to false will not affect data analysis.
+Please copy all files and folders from this rep into a directory (folder, dir) on your local drive. Create a folder named "processed_data" in the same location as the files you copied. Files with "example" may be deleted. Locate your raw data file and transfer it into the "raw data" folder. Next, please take note of your instruments timescale and time resolution (see: "Some Notes on Time Resolution heading) and input them into the "pm_analysis" function in "__RUN_ANALYSIS__".py file. If you need to define your peak/background times or would like to view the dataset, please set "show_raw_peaks=True". Else, set it to False. Setting to true will open an interactive plot of your dataset. Setting the argument to false will not affect data analysis.
 
 **Before proceeding further please read  Defining the "experimental times" JSON heading.**
 
@@ -34,15 +34,23 @@ For the program to run, you must define a .json file containing identification o
 > End time of the background for the peak. Must be below or equal to peak start/end times
 ## Creating the .json file 
 1. Navigate to the experimental_times_dicts folder and create a new file using the following (include whitespaces!):
-    >For experiments run on a single date with unique file names: 
+    >For experiments run on a single date with unique file names:
+    > 
     >yyyy-mm-dd.json
+    >
     >For expertients run on a single date with non-unique file names:
+    >
     >yyyy-mm-dd - yyyy-mm-dd (x).json (note: 'x' is just a unique integer identifier replace as needed)
-    >For experiments run on multiple days with unique file names: 
+    >
+    >For experiments run on multiple days with unique file names:
+    >
     >yyyy-mm-dd - yyyy-mm-dd.json
-    >For experiments run on multiple days with non-unique file names: 
+    >
+    >For experiments run on multiple days with non-unique file names:
+    >
     >yyyy-mm-dd - yyyy-mm-dd (x).json (note: 'x' is just a unique integer identifier. replace as needed)
-2. If show_raw_peak=True, load your plotly dataset, zoom in to the desired peak(s). Else continue to 3.\
+    >
+2. If show_raw_peak=True, load your plotly dataset, zoom in to the desired peak(s). Else continue to 3.
 3. Copy and paste the dictionary from the "COPY ME" heading into this file. *Please read COPY ME thoroughly before proceeding.*
 4. Under "condition", add an identifier for the peak. On the graph, take note of a range which is a good APPROXIMATION of the background and and the start to 'background_start_datetime' and 'background_end_datetime' The values of the background are calculated as a mean.  Date values MUST BE THE FOLLOWING FORMAT: 'yyyy-mm-dd HH:MM:SS', where time is in 24hrs.
 5. Note the EXACT start AND end times of your peak and enter them in 'peak_start_datetime' and 'peak_end_datetime'. Datetime values MUST be the same format as in step 3. For the program to run as intended, background levels must be BELOW ALL VALUES in the decay! Worst case is the program runs and you get back faulty data, best case is the program crashes. Be careful and check the output log (output.log file in 'processed_data' directory or consol output).
@@ -50,7 +58,7 @@ For the program to run, you must define a .json file containing identification o
 
 ## COPY ME
 
-Add as many dictionaries as needed, program will be okay with a minimum of one. Use proper JAVA syntax: encase strings with " " (unlike python, single ' ' are illegal in java) and remove all trailing commas (unlike python trailing ','  illegal if not followed by another entry). Rename "dict_1" to whatever identifier you wish for the dataset renaming anything else  will cause errors.  Finally, adding or removing any key/value pairs inside nested dictionaries will break the program.
+Add as many nested dictionaries as needed, program will be okay with a minimum of one. Use proper JAVA syntax: encase strings with " " (unlike python, single ' ' are illegal in java) and remove all trailing commas (unlike python trailing ','  illegal if not followed by another entry). Rename "dict_1" to whatever identifier you wish for the dataset renaming anything else  will cause errors.  Finally, adding or removing any key/value pairs inside nested dictionaries will break the program.
 
 ```
 {
@@ -73,4 +81,4 @@ Add as many dictionaries as needed, program will be okay with a minimum of one. 
 
 Happy analyzing!
 
-Nathan Shea Ouedraogo 2024-04-14  :p   
+Nathan Shea Ouedraogo 2024-04-15  :p   
