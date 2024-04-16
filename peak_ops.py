@@ -15,7 +15,7 @@ def linearized(y_data, peak=None, log_file=None):
         Normalization of Data: 
             lin_y_data = ln(y_data[i]/max(y_data))
         
-        NOTE: any value after background condition less than zero is set to 0 automatically! 
+        !WARNING!: any value after background correction less than zero is set to 0 automatically
     Args:
         >>> y_data (_array_): array like numerical data to be linearized 
         >>> peak (_int_, _float_, opt): user defined the peak concentration. If set to none, will pick first index.
