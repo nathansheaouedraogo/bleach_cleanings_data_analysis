@@ -13,8 +13,8 @@ def process_peak(experimental_dict, i, df_wide, time_resolution, timescale, log_
         df_wide (_dataframe_): dataframe of experiment
         time_resolution (_float_): #measurements/timescale
         timescale (_str_): 'seconds', 'minutes', 'hours'
-        log_file (_list_, opt): log file from file_management.track_log(). Defaulted to none.\\
-        peak (_int_, _float_, opt): user defined peak concentration. If set to none (default) will use first value in df_peak_processed['pm_conc']
+        log_file (_list_, opt): log file from file_management.track_log(). Defaulted to none.
+        peak (_int_, _float_, opt): If set to none (default) will use maximum value found in df_peak_processed['pm_conc']
     Returns:
         output (_tuple_):
             >>> peak_area (_float_): area of peak based on start/end times (output[0])
