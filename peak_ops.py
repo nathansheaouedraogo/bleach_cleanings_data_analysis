@@ -6,7 +6,7 @@ from time_wrangling import scale_measurements
 import numpy as np
 from sklearn.linear_model import LinearRegression as lm 
 
-def linearized(y_data, peak=None):
+def linearized(y_data, peak=None, log_file=None):
     
     """
     Summary: 
@@ -15,11 +15,11 @@ def linearized(y_data, peak=None):
         Normalization of Data: 
             lin_y_data = ln(y_data[i]/max(y_data))
         
-        NOTE: function sets any value <= 0 to zero! 
+        NOTE: any value after background condition less than zero is set to 0 automatically! 
     Args:
         >>> y_data (_array_): array like numerical data to be linearized 
-        >>> peak (_int_, _float_): user defined the peak concentration. If set to none, will pick first index.
-        
+        >>> peak (_int_, _float_, opt): user defined the peak concentration. If set to none, will pick first index.
+        >>> log_file (_list_, opt): log file from fm.track_log() class. defaulted to None.
     Returns: 
         >>> lin_y_data (_array_): normalized y_data
     """
@@ -27,8 +27,12 @@ def linearized(y_data, peak=None):
     # user warnings
     for val in y_data: 
         if val <= 0: 
-            print(f'\ninvalid value at index {y_data.index(val)}, replacing with 0')
-    
+            message_1 = f'\nWARNING: invalid value {val} at index {y_data.index(val)}, replacing with 0'
+            if log_file: 
+                log_file.add_line(message_1)
+            print(message)
+
+    # if user selected peak exisits, set as peak. else, select first index in list. 
     if peak: 
         peak_conc = peak
     else: 
@@ -57,9 +61,6 @@ def regression(x_data, y_data, rsq_decimals=4):
     # apply linear regression 
     lin_reg = lm().fit(x_data, y_data)
     slope, y_int, RSQ = lin_reg.coef_[0][0], lin_reg.intercept_[0], round(lin_reg.score(x_data, y_data), rsq_decimals)
-    # slope = slope_arr.astype(float)
-    # y_int = y_int_arr.astype(float)
-    # RSQ = RSQ_arr.astype(float)
     return slope, y_int, RSQ
 
 def residuals(y_data, y_fit):
@@ -80,6 +81,41 @@ def residuals(y_data, y_fit):
         residuals.append(y_data[i]-y_fit[i])
     return residuals
 
+def tangent_line(x_left, x_right, y_right, y_left): 
+    """
+    Summary:
+        Function fits a tangent line between two points 
+        at the edge of a peak.
+    Args:
+        x_left (numeric)  : left most x value. must be numeric. 
+        x_right (numeric) : right most x value. must be numeric.
+        y_left (numeric)  : left most y value. must be numeric. 
+        y_right (numeric) : right most y value. must be numeric.
+        
+    Returns:
+        slope (_float_), y_int (_float_): fitting paras of tangent line
+    """
+    
+    tangent_line = np.polyfit([x_right, x_left], [y_right, y_left], 1)
+    slope = tangent_line[0]
+    y_int = tangent_line[1]
+    return slope, y_int
+
+def skim_data(x_data, y_data):
+        
+    """
+    Summary: 
+        Function 'skims' values based on calculated tangent line. 
+        Calculated tangent line taken to be the 'baseline'. 
+        Returns corrected y-values. 
+    """
+    
+    slope, y_int = tangent_line(x_data[0], x_data[-1], y_data[0], y_data[-1])
+    skimmed_points = []
+    for i in range(len(x_data)):
+        y_skimmed = y_data[i] - (slope*x_data[i] + y_int)
+        skimmed_points.append(y_skimmed)
+    return skimmed_points 
 
 def integrate_peak(x_data, y_data):
     
@@ -89,52 +125,12 @@ def integrate_peak(x_data, y_data):
         index[0] is the start of the peak, index [-1] is the end of the peak
     """
     
-    
-    def tangent_line(x_left, x_right, y_right, y_left):
-        
-        """
-        Summary:
-            Function fits a tangent line between two points 
-            at the edge of a peak.
-        Args:
-            x_left (numeric)  : left most x value. must be numeric. 
-            x_right (numeric) : right most x value. must be numeric.
-            y_left (numeric)  : left most y value. must be numeric. 
-            y_right (numeric) : right most y value. must be numeric.
-            
-        Returns:
-            slope (_float_), y_int (_float_): fitting paras of tangent line
-        """
-        
-        tangent_line = np.polyfit([x_right, x_left], [y_right, y_left], 1)
-        slope = tangent_line[0]
-        y_int = tangent_line[1]
-        return slope, y_int
-    
-    def skim_data(x_data, y_data):
-        
-        """
-        Summary: 
-            Function 'skims' values based on calculated tangent line. 
-            Calculated tangent line taken to be the 'baseline'. 
-            Returns corrected y-values. 
-        """
-        
-        slope, y_int = tangent_line(x_data[0], x_data[-1], y_data[0], y_data[-1])
-        skimmed_points = []
-        for i in range(len(x_data)):
-            y_skimmed = y_data[i] - (slope*x_data[i] + y_int)
-            skimmed_points.append(y_skimmed)
-        return skimmed_points 
-    
     skimmed_data = skim_data(x_data, y_data)
 
     integrated_area = np.trapz(skimmed_data, x_data)
     
     return integrated_area
     
-
-
 def load_peak(experimental_dict, i, df_wide):
     
     """
@@ -162,11 +158,9 @@ def load_peak(experimental_dict, i, df_wide):
     return peak_start_index, peak_end_index, background_start_index, background_end_index
     
 def background(background_start_index, background_end_index, df_wide):
-    
     """
     Calculates background concentration
     """
-
     background = df_wide.iloc[background_start_index:background_end_index+1]['pm_conc'].mean()
     return background
 
@@ -191,19 +185,15 @@ def calculate_peak_area_and_conc(df_peak_processed):
     """
     Processes area, peak, (and returns them!)
     """
-    
-    
     # calculate peak concentration 
     elapsed_time = []
     for idx in range(len(df_peak_processed['datetime'])):
         elapsed_time.append(idx)
     peak_conc = df_peak_processed.pm_conc.max()
     peak_area = integrate_peak(elapsed_time, df_peak_processed['pm_conc'].to_list())
-    
-    
     return peak_conc, peak_area 
 
-def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=4):
+def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=4, peak=None, log_file=None):
     
     """
     Summary:
@@ -220,7 +210,8 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
         y_int (_numeric_): y-intercept of fit
         round(rsq, rsq_decimals) (_numeric_): calculated r^2 of fit, rounded to 'rsq_decimals'
         df_decay (_dataframe_): linearized decay data
-        
+        peak (_int_, _float_, opt): user defined the peak concentration. If set to none, will pick first index.
+        log_file (_list_, opt): log file from fm.track_log() class. defaulted to None.
     """
     
     # filter dataframe to decay
@@ -230,7 +221,7 @@ def calculate_decay(df_peak_processed, time_resolution, timescale, rsq_decimals=
     df_decay.reset_index(inplace=True, drop=True)
         
     # linearize decays
-    df_decay['ln_pm_conc'] = linearized(df_decay.pm_conc.to_list())
+    df_decay['ln_pm_conc'] = linearized(df_decay.pm_conc.to_list(), peak, log_file)
     
     # each index coresponds to 1 measurement
     # code below converts the index to appropriate timestamp in minutes
