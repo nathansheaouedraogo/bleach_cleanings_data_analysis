@@ -74,7 +74,7 @@ def plot_peak(df_peak_processed):
     x_axis_min = datetime_data[0]
     x_axis_max = datetime_data[-1]
     ax.set_xlim(x_axis_min, x_axis_max)
-    ax.set_xlabel(r'\textbf{Time} (CST)')
+    ax.set_xlabel(r'\textbf{Time}')
     ax.tick_params(axis='x', bottom=True, top=True, direction='inout')
     
     # y-axis
