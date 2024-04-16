@@ -1,4 +1,4 @@
-## data_dict creates a dictionary used in 'pm_analysis
+## data_dict creates a dictionary of the analyzed dataset. 
 ## allows greater abstraction to prevent modification of dictionary by user
 ## if you know what you're doing, you may add keys or functionalities and add more functions
 ## as it stands, this compartmentalizes dictionary instances and also cleans up code   
@@ -60,11 +60,11 @@ class data_dict():
         """
         return self.dict.keys()
     
-    def return_value(self, key, value):
+    def return_value(self, dict_name, key, value):
         """
-        returns value at specific key value pair
+        returns value at specific key value pair in specified sub dict
         """
-        return self.dict[key][value]
+        return self.dict[dict_name][key][value]
     
     def append_condition(self, dict_name, data):
         """
